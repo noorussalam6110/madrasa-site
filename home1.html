@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+ <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- Fonts & Bootstrap -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+
+ <style>
+  body {
+    margin: 0;
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: #222;
+  }
+  .top-banner {
+    background: rgba(0, 0, 0, 0.4);
+    padding: 2rem;
+    border-radius: 1px;
+    margin-bottom: 20px;
+    height: 300px;   /* ✅ Desktop height */
+  }
+  .top-banner h114, .top-banner p {
+    margin: 0;
+  }
+  .marquee-box {
+    background: rgba(255, 255, 255, 0.15);
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 1.5rem;
+    color: #fff;
+    margin: 0.5rem;
+    height: 60px;   /* ✅ Desktop height */
+  }
+  marquee span {
+    font-weight: bold;
+  }
+  .card {
+    border-radius: 16px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+    margin-bottom: 3rem;
+    height: auto;   /* ✅ Flexible height */
+  }
+  .card-header {
+    background: #f8f9fa;
+    font-weight: 1000;
+  }
+  select, input[type="text"] {
+    border-radius: 15px !important;
+    padding: 0.5rem 1rem;
+    width: 100%;
+  }
+  input[type="submit"] {
+    border-radius: 15px;
+    padding: 0.6rem;
+    width: 100%;
+  }
+  .footer {
+    margin: 2rem 0 1rem;
+    font-size: 0.9rem;
+    color: #fff;
+  }
+  a {
+    text-decoration: none;
+  }
+
+  /* ✅ Mobile Friendly Height */
+  @media (max-width: 600px) {
+    .top-banner {
+      height: 150px;   /* ✅ Mobile height */
+    }
+    .marquee-box {
+      height: 50px;    /* ✅ Mobile height */
+    }
+  }
+
+  @media (max-width: 376px) {
+    .result-box {
+      max-height: 200vh;
+      overflow-y: auto;
+      padding: 1rem;
+    }
+
+    .result-box select,
+    .result-box input {
+      font-size: 0.9rem;
+    }
+  }
+</style>
+</head>
+<body>
+
+
+<!-- Top Header -->
+<div class="container-fluid text-white text-center top-banner">
+  <div class="row">
+    <div class="col-sm-12">
+      <!-- Logo -->
+      <img src="https://i.ibb.co/TxLRTNFd/Html-for.jpg" alt="Noorussalam Madrasa Logo" class="img-fluid mb-2" style="max-height:100px;">
+    </div>
+    <div class="col-sm-12">
+      <h3><b><?=b1 ?> <?=b2 ?></b></h3>
+      <p><b><?=b3 ?></b></p>
+    </div>
+    <div class="col-sm-12">
+      <h4><b><?=b1 ?> <?=b4 ?></b></h4>
+      <p><b><?=b5 ?></b></p>
+    </div>
+  </div>
+</div>
+
+
+  <!-- Notice -->
+  <div class="container">
+    <div class="marquee-box">
+      <marquee behavior="scroll" direction="left" scrollamount="6">
+        <span style="color:yellow">2026-27 അദ്ധ്യയന വര്‍ഷത്തേക്കുള്ള അഡ്മിഷന്‍ മാര്‍ച്ച് 14,15 (ശനി,ഞായര്‍) ദിവസങ്ങളില്‍..</span>
+        <span style="color:yellow">ജനന സര്‍ട്ടിഫിക്കറ്റ് കോപ്പി, ആധാര്‍ കോപ്പി കൈവശം കരുതുക..</span>
+        <span style="color:yellow"> ബന്ധപ്പെടുക:</span>
+        <span style="color:yellow">7034678818, 9497349254</span>
+      </marquee>
+    </div>
+  </div>
+
+  <!-- Result Card -->
+  <div class="container mt-3">
+    <div class="card">
+      <center class="card-header">
+        <div><b><?=b1 ?> <?=b2 ?></b></div>
+        <div><b><?=b1 ?> <?=b4 ?></b></div>
+        <div class="text-success">CHECK YOUR RESULT</div>
+      </center>
+      <center class="card-body result-box">
+        <table class="table-borderless w-50">
+          <tr>
+            <td align="center">
+              <?var url=getUrl();?>
+              <form method="post" action="<?=url ?>">
+                <select class="form-select" name='cl'>
+                  <option value="20">Select Class:</option>
+                  <? if(f1!="" || f1 !=0 ){?><option value=<?=d1 ?>> <?=d1 ?> </option><?}?>
+                  <? if(f2!="" || f2 !=0 ){?><option value=<?=d2 ?>> <?=d2 ?> </option><?}?>
+                  <? if(f3!="" || f3 !=0 ){?><option value=<?=d3 ?>> <?=d3 ?> </option><?}?>
+                  <? if(f4!="" || f4 !=0 ){?><option value=<?=d4 ?>> <?=d4 ?> </option><?}?>
+                  <? if(f5!="" || f5 !=0 ){?><option value=<?=d5 ?>> <?=d5 ?> </option><?}?>
+                  <? if(f6!="" || f6 !=0 ){?><option value=<?=d6 ?>> <?=d6 ?> </option><?}?>
+                  <? if(f7!="" || f7 !=0 ){?><option value=<?=d7 ?>> <?=d7 ?> </option><?}?>
+                  <? if(f8!="" || f8 !=0 ){?><option value=<?=d8 ?>> <?=d8 ?> </option><?}?>
+                  <? if(f9!="" || f9 !=0 ){?><option value=<?=d9 ?>> <?=d9 ?> </option><?}?>
+                  <? if(f10!="" || f10 !=0 ){?><option value=<?=d10 ?>> <?=d10 ?> </option><?}?>
+                  <? if(f11!="" || f11 !=0 ){?><option value=<?=d11 ?>> <?=d11 ?> </option><?}?>
+                  <? if(f12!="" || f12 !=0 ){?><option value=<?=d12 ?>> <?=d12 ?> </option><?}?>
+                  <? if(f13!="" || f13 !=0 ){?><option value=<?=d13 ?>> <?=d13 ?> </option><?}?>
+                  <? if(f14!="" || f14 !=0 ){?><option value=<?=d14 ?>> <?=d14 ?> </option><?}?>
+                  <? if(f15!="" || f15 !=0 ){?><option value=<?=d15 ?>> <?=d15 ?> </option><?}?>
+                  <? if(f16!="" || f16 !=0 ){?><option value=<?=d16 ?>> <?=d16 ?> </option><?}?>
+                  <? if(f17!="" || f17 !=0 ){?><option value=<?=d17 ?>> <?=d17 ?> </option><?}?>
+                  <? if(f18!="" || f18 !=0 ){?><option value=<?=d18 ?>> <?=d18 ?> </option><?}?>
+                  <? if(f19!="" || f19 !=0 ){?><option value=<?=d19 ?>> <?=d19 ?> </option><?}?>
+                  <? if(f20!="" || f20 !=0 ){?><option value=<?=d20 ?>> <?=d20 ?> </option><?}?>
+                  <? if(f21!="" || f21 !=0 ){?><option value=<?=d21 ?>> <?=d21 ?> </option><?}?>
+                  <? if(f22!="" || f22 !=0 ){?><option value=<?=d22 ?>> <?=d22 ?> </option><?}?>
+                  <? if(f23!="" || f23 !=0 ){?><option value=<?=d23 ?>> <?=d23 ?> </option><?}?>
+                  <? if(f24!="" || f24 !=0 ){?><option value=<?=d24 ?>> <?=d24 ?> </option><?}?>
+                  <? if(f25!="" || f25 !=0 ){?><option value=<?=d25 ?>> <?=d25 ?> </option><?}?>
+                  <? if(f26!="" || f26 !=0 ){?><option value=<?=d26 ?>> <?=d26 ?> </option><?}?>
+                  <? if(f27!="" || f27 !=0 ){?><option value=<?=d27 ?>> <?=d27 ?> </option><?}?>
+                  <? if(f28!="" || f28 !=0 ){?><option value=<?=d28 ?>> <?=d28 ?> </option><?}?>
+                  <? if(f29!="" || f29 !=0 ){?><option value=<?=d29 ?>> <?=d29 ?> </option><?}?>
+                  <? if(f30!="" || f30 !=0 ){?><option value=<?=d30 ?>> <?=d30 ?> </option><?}?>
+                  <? if(f31!="" || f31 !=0 ){?><option value=<?=d31 ?>> <?=d31 ?> </option><?}?>
+                  <? if(f32!="" || f32 !=0 ){?><option value=<?=d32 ?>> <?=d32 ?> </option><?}?>
+                  <? if(f33!="" || f33 !=0 ){?><option value=<?=d33 ?>> <?=d33 ?> </option><?}?>
+                  <? if(f34!="" || f34 !=0 ){?><option value=<?=d34 ?>> <?=d34 ?> </option><?}?>
+                  <? if(f35!="" || f35 !=0 ){?><option value=<?=d35 ?>> <?=d35 ?> </option><?}?>
+                  <? if(f36!="" || f36 !=0 ){?><option value=<?=d36 ?>> <?=d36 ?> </option><?}?>
+                </select>
+                <br><br>
+                <input class="form-control mt-2" type="text" name="rl" placeholder="ENTER ROLL NUMBER">
+                <br>
+                <input class="btn btn-primary mt-2" type="submit" value="Get Result" name="Submit">
+              </form>
+            </td>
+          </tr>
+          <tr>
+            <td align="center">
+              <span class="fw-bold"><?=result ?></span><br>
+            </td>
+          </tr>
+        </table>
+      </center>
+    </div>
+  </div>
+
+  <!-- Info Cards -->
+  <div class="container mt-25">
+    <div class="row">
+      <div class="col-sm-6">
+        <div class="card text-center">
+          <div class="card-header text-danger"><?=b6 ?></div>
+          <div class="card-body text-primary"><?=b7 ?></div>
+        </div>
+      </div>
+      <div class="col-sm-6">
+        <div class="card text-center">
+          <div class="card-header text-danger"><?=b10 ?></div>
+          <div class="card-body text-primary"><?=b11 ?></div>
+        </div>
+      </div>
+    </div>
+  </div>
+<div style="text-align:center; margin:16px 0;">
+  <a href="https://ibb.co/mrbZqBgf" target="_blank">
+    <img src="https://i.ibb.co/Kcb4qGST/IMG-9645.jpg" 
+         alt="School Image" 
+         style="max-width:100%; height:auto; border-radius:8px; box-shadow:0 6px 18px rgba(0,0,0,0.15);">
+  </a>
+</div>
+  <!-- Footer -->
+  <center class="footer">
+    © 2025 Noorussalam Madrasa <a href="tel:7034678818" class="text-warning"><b>| All Rights Reserved</b></a>
+  </center>
+
+  <!-- Footer -->
+<center class="footer">
+    DESIGNED AND DEPLOYED BY SUHAIL KERALA | 7034678818
+    </center>
+
+</body>
+</html>
