@@ -1,5 +1,5 @@
 // Paste your deployed Apps Script Web App URL here
-const GAS_URL = "https://script.google.com/macros/s/AKfycbwTIBl-Wf49zfZEGhZWe61JlYosHl76WxxzuMZCZFUhOx9EF2wT9v_H0f0yTp6WSYg0ug/exec";
+const GAS_URL = "https://script.google.com/macros/s/AKfycbziBrj7fJvLRCGhK7TsrnveQUF8HfStB2EMTlw6DO5OAPxb9BacQn_rS5OGnhjlxUFwaw/exec";
 
 fetch(GAS_URL)
   .then(res => res.json())
