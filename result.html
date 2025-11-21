@@ -1,0 +1,186 @@
+<<!DOCTYPE html>
+<html lang="en">
+<head>
+  <base target="_center">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SCORE SHEET</title>
+
+  <!-- Bootstrap -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+
+  <style>
+    body {
+      background: #f5f7fa;
+      font-family: "Segoe UI", Tahoma, sans-serif;
+    }
+    .card {
+      border-radius: 20px;
+      box-shadow: 0px 4px 20px rgba(0,0,0,0.1);
+    }
+    .header-title {
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: #0d6efd;
+    }
+    .subtitle {
+      font-size: 1.2rem;
+      font-weight: 500;
+      color: #6c757d;
+    }
+    .result-pass { color: green; font-weight: bold; }
+    .result-fail { color: red; font-weight: bold; }
+    th {
+      background: #0d6efd !important;
+      color: white !important;
+      text-align: center;
+    }
+    td {
+      vertical-align: middle !important;
+    }
+    .footer {
+      margin-top: 30px;
+      font-size: 0.9rem;
+      color: #6c757d;
+    }
+  </style>
+
+  <script>
+    function printPage() {
+      window.print();
+    }
+  </script>
+</head>
+
+<body>
+<div class="container my-4">
+
+  <!-- HEADER -->
+  <div class="card text-center p-4 mb-4">
+    <h4 class="header-title"><?= b1 ?> <?= b2 ?></h4>
+    <h5 class="subtitle"><?= b1 ?> <?= b4 ?></h5>
+    <div class="fw-bold text-success">SCORE CARD</div>
+  </div>
+
+  <!-- STUDENT INFO -->
+  <div class="card mb-4">
+    <div class="card-body">
+      <table class="table table-bordered mb-0">
+        <tr>
+          <td style="width:40%"><b>CLASS:</b></td>
+          <td class="text-center"><?= a4 ?></td>
+        </tr>
+        <tr>
+          <td><b>ROLL NUMBER:</b></td>
+          <td class="text-center"><?= a5 ?></td>
+        </tr>
+        <tr>
+          <td><b>ADMISSION NUMBER:</b></td>
+          <td class="text-center"><?= c1 ?></td>
+        </tr>
+        <tr>
+          <td><b>NAME OF STUDENT:</b></td>
+          <td class="text-center"><b><?= c2 ?></b></td>
+        </tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- MARKSHEET -->
+  <div class="card">
+    <div class="card-body table-responsive">
+      <table class="table table-bordered table-striped">
+
+        <tr>
+          <th style="width:40%">SUBJECTS</th>
+          <th style="width:30%">MAXIMUM MARKS</th>
+          <th style="width:30%">MARKS OBTAINED</th>
+        </tr>
+
+</th> </tr><? if(a4=="1A" || a4=="1B" || a4=="1C" ){?> <tr> <td>THAFHEEM (EZHUTH):</td><td>50</td><td><?=c4 ?></td></tr><tr> <td>THAFHEEM (VAYANA)</td><td>50</td><td><?=c5 ?></td></tr><tr> <td>DUROOS ARABI MALAYALAM (EZHUTH)</td><td>50</td><td><?=c6 ?></td></tr><tr> <td>DUROOS ARABI MALAYALAM (VAYANA)</td><td>50</td><td><?=c7 ?></td></tr><tr> <td>DEENIYATH AKHLAKH (KETTEZHUTH)</td><td>50</td><td><?=c8 ?></td></tr><tr> <td>DEENIYATH AKHLAKH (VAYANA)</td><td>50</td><td><?=c9 ?></td></tr><tr> <td> </td><td> </td><td><?=c10 ?></td></tr><tr> <td><b>TOTAL MARKS</b></td><? if(a4=="1A"){?> <td><?=h1 ?></td><?}?> <? if(a4=="1B"){?> <td><?=h2 ?></td><?}?> <? if(a4=="1C"){?> <td><?=h3 ?></td><?}?> <td><?=c11 ?></td></tr><tr> <td><b>RESULT</b></td><? if(c12=="FAILED"){?> <td class="text-center" style="color:red;" colspan=2><?=c12 ?></td><?}else{?> <td class="text-center" style="color:green;" colspan=2><?=c12 ?></td><?}?> </tr><tr> <td><b>HAJAR</b></td><? if(a4=="1A"){?> <td><?=g1 ?></td><?}?> <? if(a4=="1B"){?> <td><?=g2 ?></td><?}?> <? if(a4=="1C"){?> <td><?=g3 ?></td><?}?> <td><?=c3 ?></td></tr><tr> <td><b>RANK<b/></td><? if(a4=="1A"){?> <td><?=f1 ?></td><?}?> <? if(a4=="1B"){?> <td><?=f2 ?></td><?}?> <? if(a4=="1C"){?> <td><?=f3 ?></td><?}?> <td><?=c13 ?></td></tr><?}?> <? if(a4=="2A" || a4=="2B" || a4=="2C" || a4=="6A" || a4=="6B" || a4=="6C" || a4=="7A" || a4=="7B" || a4=="7C" ){?> <tr> <td>QUR'AN</td><td>50</td><td><?=c4 ?></td></tr><tr> <td>HIFZ</td><td>50</td><td><?=c5 ?></td></tr><tr> <td>FIQH</td><td>50</td><td><?=c6 ?></td></tr><tr> <td>LISANUL QUR'AN</td><td>50</td><td><?=c7 ?></td></tr><tr> <? if(a4=="2A" || a4=="2B" || a4=="2C"){?><td>AQEEDA</td><?}?> <? if(a4=="6A" || a4=="6B" || a4=="6C" || a4=="7A" || a4=="7B" || a4=="7C"){?> <td>THAREEKH</td><?}?> <td>50</td><td><?=c8 ?></td></tr><tr> <? if(a4=="2A" || a4=="2B" || a4=="2C"){?><td>DUROOSIL IHSAN</td><?}?> <? if(a4=="6A" || a4=="6B" || a4=="6C" || a4=="7A" || a4=="7B" || a4=="7C"){?> <td>DUROOSUL IHSAN</td><?}?> <td>50</td><td><?=c9 ?></td></tr><tr> <td> </td><td> </td><td><?=c10 ?></td></tr><tr> <td><b>TOTAL MARKS</b></td><? if(a4=="2A"){?> <td><?=h4 ?></td><?}?> <? if(a4=="2B"){?> <td><?=h5 ?></td><?}?> <? if(a4=="2C"){?> <td><?=h6 ?></td><?}?> <? if(a4=="6A"){?> <td><?=h16 ?></td><?}?> <? if(a4=="6B"){?> <td><?=h17 ?></td><?}?> <? if(a4=="6C"){?> <td><?=h18 ?></td><?}?> <? if(a4=="7A"){?> <td><?=h19 ?></td><?}?> <? if(a4=="7B"){?> <td><?=h20 ?></td><?}?> <? if(a4=="7C"){?> <td><?=h21 ?></td><?}?> <td><?=c11 ?></td></tr><tr> <td><b>RESULT</b></td><? if(c12=="FAILED"){?> <td class="text-center" style="color:red;" colspan=2><?=c12 ?></td><?}else{?> <td class="text-center" style="color:green;" colspan=2><?=c12 ?></td><?}?> </tr><tr> <td><b>HAJAR</b></td><? if(a4=="2A"){?> <td><?=g4 ?></td><?}?> <? if(a4=="2B"){?> <td><?=g5 ?></td><?}?> <? if(a4=="2C"){?> <td><?=g6 ?></td><?}?> <? if(a4=="6A"){?> <td><?=g16 ?></td><?}?> <? if(a4=="6B"){?> <td><?=g17 ?></td><?}?> <? if(a4=="6C"){?> <td><?=g18 ?></td><?}?> <? if(a4=="7A"){?> <td><?=g19 ?></td><?}?> <? if(a4=="7B"){?> <td><?=g20 ?></td><?}?> <? if(a4=="7C"){?> <td><?=g21 ?></td><?}?> <td><?=c3 ?></td></tr><tr> <td><b>RANK</b></td><? if(a4=="2A"){?> <td><?=f4 ?></td><?}?> <? if(a4=="2B"){?> <td><?=f5 ?></td><?}?> <? if(a4=="2C"){?> <td><?=f6 ?></td><?}?> <? if(a4=="6A"){?> <td><?=f16 ?></td><?}?> <? if(a4=="6B"){?> <td><?=f17 ?></td><?}?> <? if(a4=="6C"){?> <td><?=f18 ?></td><?}?> <? if(a4=="7A"){?> <td><?=f19 ?></td><?}?> <? if(a4=="7B"){?> <td><?=f20 ?></td><?}?> <? if(a4=="7C"){?> <td><?=f21 ?></td><?}?> <td><?=c13 ?></td></tr><?}?> <? if(a4=="3A" || a4=="3B" || a4=="3C" || a4=="4A" || a4=="4B" || a4=="4C" || a4=="5A" || a4=="5B" || a4=="5C" ){?> <tr> <td>QUR'AN WITH THADREEBU THILAWA</td><td>50</td><td><?=c4 ?></td></tr><tr> <td>HIFZ</td><td>50</td><td><?=c5 ?></td></tr><tr> <td>FIQH</td><td>50</td><td><?=c6 ?></td></tr><tr> <td>LISANUL QUR'AN</td><td>50</td><td><?=c7 ?></td></tr><tr> <td>AQEEDA</td><td>50</td><td><?=c8 ?></td></tr><tr> <td>DUROOSIL IHSAN</td><td>50</td><td><?=c9 ?></td></tr><tr> <td>THAREEKH</td><td>50</td><td><?=c10 ?></td></tr><tr> <td></td><td></td><td><?=c11 ?></td></tr><tr> <td> </td><td> </td><td><?=c12 ?></td></tr><tr> <td><b>TOTAL MARKS</b></td><? if(a4=="3A"){?> <td><?=h7 ?></td><?}?> <? if(a4=="3B"){?> <td><?=h8 ?></td><?}?> <? if(a4=="3C"){?> <td><?=h9 ?></td><?}?> <? if(a4=="4A"){?> <td><?=h10 ?></td><?}?> <? if(a4=="4B"){?> <td><?=h11 ?></td><?}?> <? if(a4=="4C"){?> <td><?=h12 ?></td><?}?> <? if(a4=="5A"){?> <td><?=h13 ?></td><?}?> <? if(a4=="5B"){?> <td><?=h14 ?></td><?}?> <? if(a4=="5C"){?> <td><?=h15 ?></td><?}?> <td><?=c13 ?></td></tr><tr> <td><b>RESULT</b></td><? if(c14=="FAILED"){?> <td class="text-center" style="color:red;" colspan=2><?=c14 ?></td><?}else{?> <td class="text-center" style="color:green;" colspan=2><?=c14 ?></td><?}?> </tr><tr> <td><b>HAJAR</b></td><? if(a4=="3A"){?> <td><?=g7 ?></td><?}?> <? if(a4=="3B"){?> <td><?=g8 ?></td><?}?> <? if(a4=="3C"){?> <td><?=g9 ?></td><?}?> <? if(a4=="4A"){?> <td><?=g10 ?></td><?}?> <? if(a4=="4B"){?> <td><?=g11 ?></td><?}?> <? if(a4=="4C"){?> <td><?=g12 ?></td><?}?> <? if(a4=="5A"){?> <td><?=g13 ?></td><?}?> <? if(a4=="5B"){?> <td><?=g14 ?></td><?}?> <? if(a4=="5C"){?> <td><?=g15 ?></td><?}?> <td><?=c3 ?></td></tr><tr> <td><b>RANK</b></td><? if(a4=="3A"){?> <td><?=f7 ?></td><?}?> <? if(a4=="3B"){?> <td><?=f8 ?></td><?}?> <? if(a4=="3C"){?> <td><?=f9 ?></td><?}?> <? if(a4=="4A"){?> <td><?=f10 ?></td><?}?> <? if(a4=="4B"){?> <td><?=f11 ?></td><?}?> <? if(a4=="4C"){?> <td><?=f12 ?></td><?}?> <? if(a4=="5A"){?> <td><?=f13 ?></td><?}?> <? if(a4=="5B"){?> <td><?=f14 ?></td><?}?> <? if(a4=="5C"){?> <td><?=f15 ?></td><?}?> <td><?=c15 ?></td></tr><?}?> <? if(a4=="8A" || a4=="8B" || a4=="8C" || a4=="9A" || a4=="9B" || a4=="9C" || a4=="10A" || a4=="10B" || a4=="10C" || a4=="11A" || a4=="11B" || a4=="11C" || a4=="12A" || a4=="12B" || a4=="12C" ){?> <tr> <td>FIQH</td><td>50</td><td><?=c4 ?></td></tr><tr> <td>LISANUL QUR'AN</td><td>50</td><td><?=c5 ?></td></tr><tr> <td>DUROOSUL IHSAN</td><td>50</td><td><?=c6 ?></td></tr><tr> <? if(a4=="8A" || a4=="8B" || a4=="8C" || a4=="9A" || a4=="9B" || a4=="9C"){?> <td>THAREEKH:</td><?}?> <? if(a4=="10A" || a4=="10B" || a4=="10C" || a4=="11A" || a4=="11B" || a4=="11C" || a4=="12A" || a4=="12B" || a4=="12C"){?> <td>THAFSEER</td><?}?> <td>50</td><td><?=c7 ?></td></tr><tr> <td> </td><td> </td><td><?=c8 ?></td></tr><tr> <td><b>TOTAL MARKS</b></td><? if(a4=="8A"){?> <td><?=h22 ?></td><?}?> <? if(a4=="8B"){?> <td><?=h23 ?></td><?}?> <? if(a4=="8C"){?> <td><?=h24 ?></td><?}?> <? if(a4=="9A"){?> <td><?=h25 ?></td><?}?> <? if(a4=="9B"){?> <td><?=h26 ?></td><?}?> <? if(a4=="9C"){?> <td><?=h27 ?></td><?}?> <? if(a4=="10A"){?> <td><?=h28 ?></td><?}?> <? if(a4=="10B"){?> <td><?=h29 ?></td><?}?> <? if(a4=="10C"){?> <td><?=h30 ?></td><?}?> <? if(a4=="11A"){?> <td><?=h31 ?></td><?}?> <? if(a4=="11B"){?> <td><?=h32 ?></td><?}?> <? if(a4=="11C"){?> <td><?=h33 ?></td><?}?> <? if(a4=="12A"){?> <td><?=h34 ?></td><?}?> <? if(a4=="12B"){?> <td><?=h35 ?></td><?}?> <? if(a4=="12C"){?> <td><?=h36 ?></td><?}?> <td><?=c9 ?></td></tr><tr> <td><b>RESULT</b></td><? if(c10=="FAILED"){?> <td class="text-center" style="color:red;" colspan=2><?=c10 ?></td><?}else{?> <td class="text-center" style="color:green;" colspan=2><?=c10 ?></td><?}?> </tr><tr> <td><b>HAJAR</b></td><? if(a4=="8A"){?> <td><?=g22 ?></td><?}?> <? if(a4=="8B"){?> <td><?=g23 ?></td><?}?> <? if(a4=="8C"){?> <td><?=g24 ?></td><?}?> <? if(a4=="9A"){?> <td><?=g25 ?></td><?}?> <? if(a4=="9B"){?> <td><?=g26 ?></td><?}?> <? if(a4=="9C"){?> <td><?=g27 ?></td><?}?> <? if(a4=="10A"){?> <td><?=g28 ?></td><?}?> <? if(a4=="10B"){?> <td><?=g29 ?></td><?}?> <? if(a4=="10C"){?> <td><?=g30 ?></td><?}?> <? if(a4=="11A"){?> <td><?=g31 ?></td><?}?> <? if(a4=="11B"){?> <td><?=g32 ?></td><?}?> <? if(a4=="11C"){?> <td><?=g33 ?></td><?}?> <? if(a4=="12A"){?> <td><?=g34 ?></td><?}?> <? if(a4=="12B"){?> <td><?=g35 ?></td><?}?> <? if(a4=="12C"){?> <td><?=g36 ?></td><?}?> <td><?=c3 ?></td></tr><tr> <td><b>RANK</b></td><? if(a4=="8A"){?> <td><?=f22 ?></td><?}?> <? if(a4=="8B"){?> <td><?=f23 ?></td><?}?> <? if(a4=="8C"){?> <td><?=f24 ?></td><?}?> <? if(a4=="9A"){?> <td><?=f25 ?></td><?}?> <? if(a4=="9B"){?> <td><?=f26 ?></td><?}?> <? if(a4=="9C"){?> <td><?=f27 ?></td><?}?> <? if(a4=="10A"){?> <td><?=f28 ?></td><?}?> <? if(a4=="10B"){?> <td><?=f29 ?></td><?}?> <? if(a4=="10C"){?> <td><?=f30 ?></td><?}?> <? if(a4=="11A"){?> <td><?=f31 ?></td><?}?> <? if(a4=="11B"){?> <td><?=f32 ?></td><?}?> <? if(a4=="11C"){?> <td><?=f33 ?></td><?}?> <? if(a4=="12A"){?> <td><?=f34 ?></td><?}?> <? if(a4=="12B"){?> <td><?=f35 ?></td><?}?> <? if(a4=="12C"){?> <td><?=f36 ?></td><?}?> <td><?=c11 ?></td></tr><?}?> <tr> <td colspan=3 align=center> <?var url=getUrl();?> <form method="post" action="<?=url ?>">  <input type="submit" value="CheckNew Result" name="back"></body></center></html> <!DOCTYPE html>
+<html>
+<head>
+<script>
+function printPage() {
+  window.print();
+}
+</script>
+</head>
+<body>
+
+<input type="button" value="Print Result" onclick="printPage()" />
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Download Result</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding:20px; background:#f0f0f0; }
+    button { padding:8px 14px; font-size:15px; cursor:pointer; border-radius:6px; }
+    .box { background:#fff; padding:20px; margin-top:20px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,.1); }
+  </style>
+  <!-- html2canvas -->
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+</head>
+<body>
+
+<button id="saveFull">Download Result</button>
+
+<div class="box">
+
+</div>
+
+<script>
+document.getElementById('saveFull').addEventListener('click', async function () {
+  const btn = this;
+  btn.disabled = true;
+  btn.textContent = 'Preparing...';
+
+  try {
+    const doc = document.documentElement;
+    const pageWidth  = Math.max(doc.scrollWidth, doc.clientWidth);
+    const pageHeight = Math.max(doc.scrollHeight, doc.clientHeight);
+
+    const canvas = await html2canvas(document.body, {
+      useCORS: true,
+      logging: false,
+      backgroundColor: null, // keeps background transparent
+      width: pageWidth,
+      height: pageHeight,
+      windowWidth: pageWidth,
+      windowHeight: pageHeight
+    });
+
+    const link = document.createElement('a');
+    link.download = 'Result NSM.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+
+  } catch (err) {
+    console.error(err);
+    alert('Error: ' + err.message);
+  }
+
+  btn.disabled = false;
+  btn.textContent = 'Download Result';
+});
+</script>
+
+</body>
+</html>
+
+</body>
+</html>
+ <!-- Footer -->
+  <center class="footer">
+    © 2025 Noorussalam Madrasa <a href="tel:7034678818" class="text-warning"><b>| All Rights Reserved</b></a>
+  </center>
+
+  <!-- Footer -->
+<center class="footer">
+    DESIGNED AND DEPLOYED BY SUHAIL KERALA | 7034678818
+    </center>
+    
