@@ -45,6 +45,7 @@
       color: #333;
       overflow-x: hidden;
       line-height: 1.6;
+      padding-top: 80px; /* Added for fixed navbar */
     }
     
     /* Malayalam text */
@@ -110,12 +111,12 @@
       background: rgba(13, 92, 62, 0.98);
       backdrop-filter: blur(10px);
       border-bottom: 3px solid var(--gold);
-      padding: 0.8rem 0;
+      padding: 0.5rem 0;
       transition: all 0.3s ease;
     }
     
     .navbar-optimized.scrolled {
-      padding: 0.6rem 0;
+      padding: 0.4rem 0;
       box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
     }
     
@@ -125,39 +126,42 @@
       background: rgba(255, 255, 255, 0.1);
       border-radius: 8px;
       border: 2px solid var(--gold);
+      display: flex;
+      align-items: center;
     }
     
     .navbar-brand-compact img {
-      width: 50px;
-      height: 50px;
+      width: 45px;
+      height: 45px;
       object-fit: contain;
     }
     
     .brand-text {
-      font-size: 1.6rem;
+      font-size: 1.4rem;
       line-height: 1;
       margin-bottom: 0.1rem;
     }
     
     .brand-subtext {
-      font-size: 0.7rem;
+      font-size: 0.65rem;
       opacity: 0.9;
     }
     
     /* NAV ITEMS - OPTIMIZED SPACING */
     .nav-container {
-      flex-wrap: nowrap;
+      display: flex;
+      align-items: center;
     }
     
     .nav-item-optimized {
-      margin: 0 0.2rem !important;
+      margin: 0 0.15rem !important;
     }
     
     .nav-link-optimized {
       color: white !important;
       font-weight: 500;
       font-size: 0.85rem !important;
-      padding: 0.5rem 0.7rem !important;
+      padding: 0.5rem 0.6rem !important;
       margin: 0 !important;
       border-radius: 6px;
       transition: all 0.2s ease;
@@ -210,12 +214,16 @@
     
     /* MOBILE NAVBAR FIXES */
     @media (max-width: 992px) {
+      body {
+        padding-top: 70px; /* Reduced for mobile */
+      }
+      
       .navbar-optimized .navbar-collapse {
         background: rgba(13, 92, 62, 0.98);
         backdrop-filter: blur(10px);
         border-radius: 10px;
-        padding: 1rem;
-        margin-top: 1rem;
+        padding: 0.5rem;
+        margin-top: 0.5rem;
         box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
         border: 1px solid rgba(193, 154, 60, 0.3);
       }
@@ -226,16 +234,17 @@
       }
       
       .nav-item-optimized {
-        margin: 0.3rem 0 !important;
+        margin: 0.25rem 0 !important;
         width: 100%;
+        display: block;
       }
       
       .nav-link-optimized {
         width: 100%;
         text-align: left;
-        padding: 0.8rem 1rem !important;
-        margin: 0.2rem 0 !important;
-        border-radius: 8px;
+        padding: 0.7rem 1rem !important;
+        margin: 0.15rem 0 !important;
+        border-radius: 6px;
         background: rgba(255, 255, 255, 0.05);
         font-size: 0.9rem !important;
       }
@@ -252,53 +261,88 @@
       .dropdown-menu-optimized {
         background: rgba(10, 53, 36, 0.95) !important;
         border: 1px solid rgba(193, 154, 60, 0.4);
-        margin: 0.5rem 0 0.5rem 1rem !important;
-        width: 90%;
+        margin: 0.3rem 0 0.3rem 1rem !important;
+        width: calc(100% - 2rem);
       }
       
       .dropdown-item-optimized {
-        padding: 0.7rem 1.2rem !important;
+        padding: 0.6rem 1rem !important;
         border-radius: 6px;
         margin: 0.1rem 0;
+        font-size: 0.85rem;
       }
       
       .dropdown-toggle::after {
         float: right;
-        margin-top: 0.5rem;
+        margin-top: 0.4rem;
       }
       
       .navbar-optimized {
-        padding: 0.5rem 0;
+        padding: 0.4rem 0;
       }
       
       .navbar-toggler {
-        padding: 0.3rem 0.5rem;
-        font-size: 1rem;
+        padding: 0.25rem 0.4rem;
+        font-size: 0.9rem;
+        border-width: 1px;
       }
-    }
-    
-    /* EXTRA SMALL SCREENS */
-    @media (max-width: 576px) {
+      
+      /* Adjust container padding for mobile */
+      .container-fluid {
+        padding-left: 0.75rem !important;
+        padding-right: 0.75rem !important;
+      }
+      
+      /* Fix brand alignment */
       .navbar-brand-compact {
         padding: 0.2rem 0.5rem;
       }
       
       .navbar-brand-compact img {
-        width: 45px;
-        height: 45px;
+        width: 40px;
+        height: 40px;
       }
       
       .brand-text {
-        font-size: 1.4rem;
+        font-size: 1.2rem;
       }
       
       .brand-subtext {
-        font-size: 0.65rem;
+        font-size: 0.6rem;
+      }
+    }
+    
+    /* EXTRA SMALL SCREENS */
+    @media (max-width: 576px) {
+      body {
+        padding-top: 65px;
+      }
+      
+      .navbar-brand-compact {
+        padding: 0.15rem 0.4rem;
+      }
+      
+      .navbar-brand-compact img {
+        width: 35px;
+        height: 35px;
+      }
+      
+      .brand-text {
+        font-size: 1.1rem;
+      }
+      
+      .brand-subtext {
+        font-size: 0.55rem;
       }
       
       .nav-link-optimized {
         font-size: 0.85rem !important;
-        padding: 0.7rem 0.9rem !important;
+        padding: 0.6rem 0.8rem !important;
+      }
+      
+      .dropdown-item-optimized {
+        font-size: 0.8rem !important;
+        padding: 0.5rem 0.8rem !important;
       }
     }
     
@@ -317,7 +361,8 @@
     /* Toggle button styling */
     .navbar-toggler {
       border: 2px solid rgba(255, 255, 255, 0.3);
-      padding: 0.3rem 0.6rem;
+      padding: 0.3rem 0.5rem;
+      font-size: 0.9rem;
     }
     
     .navbar-toggler:focus {
@@ -326,8 +371,8 @@
     
     .navbar-toggler-icon {
       background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%28255, 255, 255, 0.9%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
-      width: 1.2em;
-      height: 1.2em;
+      width: 1.1em;
+      height: 1.1em;
     }
     
     /* ===== FIXED NEWS TICKER ===== */
@@ -339,6 +384,7 @@
       position: relative;
       width: 100%;
       height: 60px;
+      margin-top: 0; /* Remove any top margin */
     }
     
     .ticker-wrapper {
@@ -444,6 +490,7 @@
     .hero-content {
       position: relative;
       z-index: 2;
+      padding: 2rem 0;
     }
     
     .hero-badge {
@@ -854,7 +901,7 @@
       
       .hero-section {
         min-height: 70vh;
-        padding: 4rem 0;
+        padding: 3rem 0;
       }
       
       .section-title {
