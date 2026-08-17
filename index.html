@@ -7,11 +7,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Anek+Malayalam:wght@300;400;500;600;700;800&family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js">
     </script>
-    <!-- jsPDF + autoTable – using cdnjs for reliability -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js">
-    </script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js">
-    </script>
+    <!-- jsPDF + autoTable will be loaded dynamically if needed -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <style>
         /* ===== GLOBAL RESET ===== */
@@ -3829,7 +3825,7 @@
         }
 
         // ================================================================
-        // ADMIN RANKINGS with PDF download (FIXED)
+        // ADMIN RANKINGS with ROBUST PDF LOADER
         // ================================================================
         let currentRankingDay = 1;
 
@@ -3883,55 +3879,83 @@
             }
         }
 
-        // ---- Ensure autoTable is loaded ----
-        function ensureAutoTableLoaded() {
-            return new Promise((resolve) => {
-                // Check if autoTable is already available
-                if (typeof window.jspdf !== 'undefined' &&
-                    window.jspdf.jsPDF &&
-                    typeof window.jspdf.jsPDF.prototype.autoTable === 'function') {
-                    resolve(true);
-                    return;
-                }
+        // ================================================================
+        // ROBUST PDF LOADER (loads jsPDF and autoTable with fallback)
+        // ================================================================
+        let pdfLoadAttempted = false;
+        let pdfLoaded = false;
 
-                // Try to manually apply the plugin if it's available globally
-                if (typeof window.jspdf !== 'undefined' &&
-                    typeof window.jspdf.plugin !== 'undefined' &&
-                    typeof window.jspdf.plugin.autotable === 'function') {
-                    try {
-                        window.jspdf.plugin.autotable(window.jspdf.jsPDF);
-                        resolve(true);
-                        return;
-                    } catch (e) {
-                        // ignore and fallback to reload
-                    }
-                }
-
-                // Dynamically reload the plugin script
+        function loadScript(src) {
+            return new Promise((resolve, reject) => {
                 const script = document.createElement('script');
-                script.src =
-                    'https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js';
-                script.onload = () => {
-                    // After loading, try to attach again
-                    if (typeof window.jspdf !== 'undefined' &&
-                        typeof window.jspdf.plugin !== 'undefined' &&
-                        typeof window.jspdf.plugin.autotable === 'function') {
-                        try {
-                            window.jspdf.plugin.autotable(window.jspdf.jsPDF);
-                            resolve(true);
-                            return;
-                        } catch (e) {}
-                    }
-                    // Fallback: check if autoTable is now defined
-                    if (window.jspdf.jsPDF.prototype.autoTable) {
-                        resolve(true);
-                    } else {
-                        resolve(false);
-                    }
-                };
-                script.onerror = () => resolve(false);
+                script.src = src;
+                script.async = true;
+                script.onload = resolve;
+                script.onerror = reject;
                 document.head.appendChild(script);
             });
+        }
+
+        async function ensurePDFLibraries() {
+            if (pdfLoaded) return true;
+            if (pdfLoadAttempted) return false; // already tried and failed
+
+            pdfLoadAttempted = true;
+
+            // Check if already loaded
+            if (typeof window.jspdf !== 'undefined' && window.jspdf.jsPDF &&
+                typeof window.jspdf.jsPDF.prototype.autoTable === 'function') {
+                pdfLoaded = true;
+                return true;
+            }
+
+            try {
+                // Try loading from cdnjs
+                await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js');
+                await loadScript(
+                    'https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js');
+                // Wait a moment for the plugin to attach
+                await new Promise(r => setTimeout(r, 200));
+
+                if (typeof window.jspdf !== 'undefined' && window.jspdf.jsPDF &&
+                    typeof window.jspdf.jsPDF.prototype.autoTable === 'function') {
+                    pdfLoaded = true;
+                    return true;
+                }
+
+                // If still not loaded, try alternative CDN (unpkg)
+                await loadScript('https://unpkg.com/jspdf@2.5.1/dist/jspdf.umd.min.js');
+                await loadScript('https://unpkg.com/jspdf-autotable@3.5.31/dist/jspdf.plugin.autotable.js');
+                await new Promise(r => setTimeout(r, 200));
+
+                if (typeof window.jspdf !== 'undefined' && window.jspdf.jsPDF &&
+                    typeof window.jspdf.jsPDF.prototype.autoTable === 'function') {
+                    pdfLoaded = true;
+                    return true;
+                }
+
+                // If we still fail, try manual attach (for older versions)
+                if (typeof window.jspdf !== 'undefined' && window.jspdf.plugin && typeof window.jspdf.plugin
+                    .autotable === 'function') {
+                    try {
+                        window.jspdf.plugin.autotable(window.jspdf.jsPDF);
+                        pdfLoaded = true;
+                        return true;
+                    } catch (e) { /* ignore */ }
+                }
+
+                // Final check
+                if (typeof window.jspdf !== 'undefined' && window.jspdf.jsPDF &&
+                    typeof window.jspdf.jsPDF.prototype.autoTable === 'function') {
+                    pdfLoaded = true;
+                    return true;
+                }
+
+                return false;
+            } catch (e) {
+                console.error('PDF library loading error:', e);
+                return false;
+            }
         }
 
         // ---- Download Day PDF ----
@@ -3944,9 +3968,10 @@
             btn.disabled = true;
             btn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Generating...';
             try {
-                const loaded = await ensureAutoTableLoaded();
+                const loaded = await ensurePDFLibraries();
                 if (!loaded) {
-                    showToast('PDF library failed to load. Please check your internet connection.', 'error');
+                    showToast('PDF library could not be loaded. Please check your internet connection and refresh the page.',
+                        'error');
                     btn.disabled = false;
                     btn.innerHTML = '<i class="fas fa-file-pdf"></i> Download Day PDF';
                     return;
@@ -4029,9 +4054,10 @@
             btn.disabled = true;
             btn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Generating...';
             try {
-                const loaded = await ensureAutoTableLoaded();
+                const loaded = await ensurePDFLibraries();
                 if (!loaded) {
-                    showToast('PDF library failed to load. Please check your internet connection.', 'error');
+                    showToast('PDF library could not be loaded. Please check your internet connection and refresh the page.',
+                        'error');
                     btn.disabled = false;
                     btn.innerHTML = '<i class="fas fa-file-pdf"></i> Download Overall PDF';
                     return;
@@ -4236,7 +4262,7 @@
             });
         });
 
-        console.log('🚀 NOORUSSALAM MADRASA — PDF download fixed with autoTable reload fallback and manual plugin attach.');
+        console.log('🚀 NOORUSSALAM MADRASA — PDF download with robust fallback loader.');
     </script>
 </body>
 </html>
