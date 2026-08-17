@@ -2030,7 +2030,7 @@
         </div>
         <div class="loading-wishing">
             <i class="fas fa-hand-sparkles"></i>
-            സ്വാഗതം! നിങ്ങളുടെ ജ്ഞാനയാത്രയ്ക്ക് ആശംസകൾ
+            സ്വാഗതം! നിങ്ങൾ തയ്യാറല്ലേ... ആശംസകൾ
             <i class="fas fa-heart" style="color:#f472b6;"></i>
         </div>
         <div class="loading-deco">
@@ -2236,14 +2236,14 @@
             <div id="rankingArea" class="hidden">
                 <div class="glass-card">
                     <div class="flex-between">
-                        <h3 style="color:var(--gold); font-size:1.2rem;">🏆 നിങ്ങളുടെ ഫലം</h3>
+                        <h3 style="color:var(--gold); font-size:1.2rem;">🏆 Results</h3>
                     </div>
                     <div id="publicationCountdown" class="publication-box hidden">
                         <p class="text-muted">📢 ഫലപ്രഖ്യാപനത്തിനായി കാത്തിരിക്കുക</p>
                         <div class="pub-timer" id="publicationTimer">05:00</div>
                     </div>
                     <div id="rankListContainer"><div class="text-center text-muted">ലോഡ് ചെയ്യുന്നു...</div></div>
-                    <div class="parent-rank-hint"><i class="fas fa-star"></i> നിങ്ങളുടെ ഇന്നത്തെ പ്രകടനം <i class="fas fa-star"></i></div>
+                    <div class="parent-rank-hint"><i class="fas fa-star"></i>പിശക് തോന്നുന്നുവെങ്കിൽ അഡ്മിൻ സുഹൈൽ ഉസ്താദിനെ ബന്ധപ്പെടുക.<i class="fas fa-star"></i></div>
                 </div>
             </div>
 
@@ -2259,7 +2259,7 @@
         <div id="historyModal" class="modal-overlay hidden">
             <div class="modal-glass" style="max-width:640px;">
                 <div class="flex-between" style="margin-bottom:16px;">
-                    <h3><i class="fas fa-clock-rotate-left" style="color:var(--gold);"></i>Results</h3>
+                    <h3><i class="fas fa-clock-rotate-left" style="color:var(--gold);"></i>ഇതുവരെയുള്ള Results</h3>
                     <button class="btn btn-outline btn-sm" id="closeHistoryBtn"><i class="fas fa-times"></i></button>
                 </div>
                 <p class="text-muted">ഓരോ ദിവസത്തിലെയും നിങ്ങളുടെ പോയിന്റ്, റാങ്ക്, സമയം എന്നിവ.</p>
@@ -2293,6 +2293,7 @@
                     ദയവായി ഉറപ്പാക്കുക:
                     <br>• നിങ്ങൾ തയ്യാറാണോ?
                     <br>• സമയപരിധി മനസ്സിലാക്കിയിട്ടുണ്ടോ?
+                    <br>• സമയത്തിന് മുമ്പ് Submit ചെയ്യാൻ മറക്കരുത്.
                     <br><br>
                     <span style="color:var(--gold);">"തുടങ്ങുക" ക്ലിക്ക് ചെയ്താൽ ക്വിസ് ആരംഭിക്കും.</span>
                 </p>
@@ -3191,19 +3192,19 @@
                 if (userRank === 1) {
                     medalEmoji = '🥇';
                     rankClass = 'top-1';
-                    celebrationText = '🏆 ഒന്നാം സ്ഥാനം — മികച്ച പ്രകടനം!';
+                    celebrationText = '🏆 ഒന്നാം സ്ഥാനം — അഭിനന്ദനങ്ങൾ!';
                 } else if (userRank === 2) {
                     medalEmoji = '🥈';
                     rankClass = 'top-2';
-                    celebrationText = '🥈 രണ്ടാം സ്ഥാനം — അതിശയകരം!';
+                    celebrationText = '🥈 രണ്ടാം സ്ഥാനം — അഭിനന്ദനങ്ങൾ!';
                 } else if (userRank === 3) {
                     medalEmoji = '🥉';
                     rankClass = 'top-3';
-                    celebrationText = '🥉 മൂന്നാം സ്ഥാനം — വളരെ നന്ന്!';
+                    celebrationText = '🥉 മൂന്നാം സ്ഥാനം — അഭിനന്ദനങ്ങൾ!';
                 } else {
                     medalEmoji = '🏅';
                     rankClass = '';
-                    celebrationText = '✅ നിങ്ങളുടെ റാങ്ക്';
+                    celebrationText = 'ശ്രമിച്ചുകൊണ്ടേയിരിക്കുക..';
                 }
 
                 const mins = Math.floor(timeTaken / 60);
@@ -3232,7 +3233,7 @@
                         ${celebrationText ? `<div class="rank-celebration">${celebrationText}</div>` : ''}
                         <div class="rank-detail-btn">
                             <button class="btn btn-outline btn-sm" onclick="showAnswerDetails('${myAttempt.id}')" style="border-color:rgba(251,191,36,0.3); color:var(--gold);">
-                                <i class="fas fa-list-check"></i> 📋 ഉത്തരങ്ങൾ കാണുക
+                                <i class="fas fa-list-check"></i> 📋 നിങ്ങൾ നൽകിയ ഉത്തരങ്ങൾ..
                             </button>
                         </div>
                     </div>
