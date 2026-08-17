@@ -7,7 +7,11 @@
     <link href="https://fonts.googleapis.com/css2?family=Anek+Malayalam:wght@300;400;500;600;700;800&family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js">
     </script>
-    <!-- jsPDF + autoTable will be loaded dynamically if needed -->
+    <!-- jsPDF + autoTable – these will be used if available, otherwise dynamic loader will fetch them -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js">
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js">
+    </script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <style>
         /* ===== GLOBAL RESET ===== */
@@ -3825,7 +3829,7 @@
         }
 
         // ================================================================
-        // ADMIN RANKINGS with ROBUST PDF LOADER
+        // ADMIN RANKINGS with ROBUST PDF LOADER (MULTI-CDN)
         // ================================================================
         let currentRankingDay = 1;
 
@@ -3880,7 +3884,7 @@
         }
 
         // ================================================================
-        // ROBUST PDF LOADER (loads jsPDF and autoTable with fallback)
+        // ROBUST PDF LOADER – tries multiple CDNs
         // ================================================================
         let pdfLoadAttempted = false;
         let pdfLoaded = false;
@@ -3898,67 +3902,91 @@
 
         async function ensurePDFLibraries() {
             if (pdfLoaded) return true;
-            if (pdfLoadAttempted) return false; // already tried and failed
+            if (pdfLoadAttempted) return false;
 
             pdfLoadAttempted = true;
 
-            // Check if already loaded
+            // Check if already loaded (from static tags or previous dynamic load)
             if (typeof window.jspdf !== 'undefined' && window.jspdf.jsPDF &&
                 typeof window.jspdf.jsPDF.prototype.autoTable === 'function') {
                 pdfLoaded = true;
                 return true;
             }
 
-            try {
-                // Try loading from cdnjs
-                await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js');
-                await loadScript(
-                    'https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js');
-                // Wait a moment for the plugin to attach
-                await new Promise(r => setTimeout(r, 200));
-
-                if (typeof window.jspdf !== 'undefined' && window.jspdf.jsPDF &&
-                    typeof window.jspdf.jsPDF.prototype.autoTable === 'function') {
-                    pdfLoaded = true;
-                    return true;
+            // List of CDN sources to try (jsPDF + autoTable)
+            const cdnSources = [
+                // cdnjs
+                {
+                    jsPDF: 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',
+                    autoTable: 'https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js'
+                },
+                // jsdelivr
+                {
+                    jsPDF: 'https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js',
+                    autoTable: 'https://cdn.jsdelivr.net/npm/jspdf-autotable@3.5.31/dist/jspdf.plugin.autotable.js'
+                },
+                // unpkg
+                {
+                    jsPDF: 'https://unpkg.com/jspdf@2.5.1/dist/jspdf.umd.min.js',
+                    autoTable: 'https://unpkg.com/jspdf-autotable@3.5.31/dist/jspdf.plugin.autotable.js'
                 }
+            ];
 
-                // If still not loaded, try alternative CDN (unpkg)
-                await loadScript('https://unpkg.com/jspdf@2.5.1/dist/jspdf.umd.min.js');
-                await loadScript('https://unpkg.com/jspdf-autotable@3.5.31/dist/jspdf.plugin.autotable.js');
-                await new Promise(r => setTimeout(r, 200));
+            for (const source of cdnSources) {
+                try {
+                    // Load jsPDF
+                    await loadScript(source.jsPDF);
+                    // Wait a bit for it to initialize
+                    await new Promise(r => setTimeout(r, 100));
+                    // Load autoTable
+                    await loadScript(source.autoTable);
+                    await new Promise(r => setTimeout(r, 200));
 
-                if (typeof window.jspdf !== 'undefined' && window.jspdf.jsPDF &&
-                    typeof window.jspdf.jsPDF.prototype.autoTable === 'function') {
-                    pdfLoaded = true;
-                    return true;
-                }
-
-                // If we still fail, try manual attach (for older versions)
-                if (typeof window.jspdf !== 'undefined' && window.jspdf.plugin && typeof window.jspdf.plugin
-                    .autotable === 'function') {
-                    try {
-                        window.jspdf.plugin.autotable(window.jspdf.jsPDF);
+                    // Check if autoTable is now available
+                    if (typeof window.jspdf !== 'undefined' && window.jspdf.jsPDF &&
+                        typeof window.jspdf.jsPDF.prototype.autoTable === 'function') {
                         pdfLoaded = true;
                         return true;
-                    } catch (e) { /* ignore */ }
-                }
+                    }
 
-                // Final check
-                if (typeof window.jspdf !== 'undefined' && window.jspdf.jsPDF &&
-                    typeof window.jspdf.jsPDF.prototype.autoTable === 'function') {
-                    pdfLoaded = true;
-                    return true;
+                    // If still not attached, try manual attach
+                    if (typeof window.jspdf !== 'undefined' && window.jspdf.plugin &&
+                        typeof window.jspdf.plugin.autotable === 'function') {
+                        try {
+                            window.jspdf.plugin.autotable(window.jspdf.jsPDF);
+                            pdfLoaded = true;
+                            return true;
+                        } catch (e) { /* ignore */ }
+                    }
+                } catch (e) {
+                    console.warn('PDF load attempt failed:', e);
+                    // Continue to next CDN
                 }
-
-                return false;
-            } catch (e) {
-                console.error('PDF library loading error:', e);
-                return false;
             }
+
+            // If all CDNs fail, try one more time with a different approach: load both from the same CDN (jsdelivr combined?)
+            // Not needed; we already tried.
+
+            return false;
         }
 
-        // ---- Download Day PDF ----
+        // ---- Helper to generate CSV fallback ----
+        function downloadCSV(data, filename) {
+            const header = Object.keys(data[0] || {}).join(',');
+            const rows = data.map(row => Object.values(row).join(','));
+            const csv = [header, ...rows].join('\n');
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        // ---- Download Day PDF (with CSV fallback) ----
         document.getElementById('downloadDayRankBtn').addEventListener('click', function() {
             downloadDayRanking(currentRankingDay);
         });
@@ -3970,13 +3998,42 @@
             try {
                 const loaded = await ensurePDFLibraries();
                 if (!loaded) {
-                    showToast('PDF library could not be loaded. Please check your internet connection and refresh the page.',
-                        'error');
+                    showToast('PDF library unavailable. Downloading CSV instead...', 'info');
+                    // Fetch data and generate CSV
+                    const { data: attempts } = await _supabase
+                        .from('Attempt')
+                        .select('*, Student(name)')
+                        .eq('sessionDay', day)
+                        .eq('status', 'COMPLETED');
+                    if (!attempts || attempts.length === 0) {
+                        showToast('No data for this day', 'error');
+                        btn.disabled = false;
+                        btn.innerHTML = '<i class="fas fa-file-pdf"></i> Download Day PDF';
+                        return;
+                    }
+                    const ranked = attempts.map(a => ({
+                        ...a,
+                        timeTaken: Math.floor((new Date(a.endTime) - new Date(a.startTime)) / 1000)
+                    }));
+                    ranked.sort((a, b) => {
+                        if (a.score !== b.score) return (b.score || 0) - (a.score || 0);
+                        return (a.timeTaken || 9999) - (b.timeTaken || 9999);
+                    });
+                    const csvData = ranked.map((r, idx) => ({
+                        Rank: idx + 1,
+                        Parent: r.Student?.name || 'Unknown',
+                        Score: r.score || 0,
+                        'Time (sec)': r.timeTaken || 0,
+                        Submitted: formatDate(r.endTime)
+                    }));
+                    downloadCSV(csvData, `Rankings_Day${day}.csv`);
+                    showToast('CSV downloaded (PDF unavailable)', 'success');
                     btn.disabled = false;
                     btn.innerHTML = '<i class="fas fa-file-pdf"></i> Download Day PDF';
                     return;
                 }
 
+                // Proceed with PDF generation
                 const { data: attempts } = await _supabase
                     .from('Attempt')
                     .select('*, Student(name)')
@@ -4044,7 +4101,7 @@
             }
         }
 
-        // ---- Download Overall PDF ----
+        // ---- Download Overall PDF (with CSV fallback) ----
         document.getElementById('downloadOverallRankBtn').addEventListener('click', function() {
             downloadOverallRanking();
         });
@@ -4056,13 +4113,57 @@
             try {
                 const loaded = await ensurePDFLibraries();
                 if (!loaded) {
-                    showToast('PDF library could not be loaded. Please check your internet connection and refresh the page.',
-                        'error');
+                    showToast('PDF library unavailable. Downloading CSV instead...', 'info');
+                    const { data: attempts } = await _supabase
+                        .from('Attempt')
+                        .select('*, Student(name)')
+                        .eq('status', 'COMPLETED');
+                    if (!attempts || attempts.length === 0) {
+                        showToast('No data for overall ranking', 'error');
+                        btn.disabled = false;
+                        btn.innerHTML = '<i class="fas fa-file-pdf"></i> Download Overall PDF';
+                        return;
+                    }
+                    const studentMap = {};
+                    attempts.forEach(a => {
+                        const id = a.studentId;
+                        if (!studentMap[id]) {
+                            studentMap[id] = {
+                                studentId: id,
+                                name: a.Student?.name || 'Unknown',
+                                totalScore: 0,
+                                totalTime: 0,
+                                count: 0
+                            };
+                        }
+                        studentMap[id].totalScore += (a.score || 0);
+                        const timeTaken = Math.floor((new Date(a.endTime) - new Date(a.startTime)) / 1000);
+                        studentMap[id].totalTime += timeTaken;
+                        studentMap[id].count += 1;
+                    });
+                    const ranked = Object.values(studentMap).map(s => ({
+                        ...s,
+                        avgTime: Math.round(s.totalTime / s.count)
+                    }));
+                    ranked.sort((a, b) => {
+                        if (a.totalScore !== b.totalScore) return b.totalScore - a.totalScore;
+                        return a.avgTime - b.avgTime;
+                    });
+                    const csvData = ranked.map((r, idx) => ({
+                        Rank: idx + 1,
+                        Parent: r.name,
+                        'Total Score': r.totalScore,
+                        'Avg Time (sec)': r.avgTime,
+                        Attempts: r.count
+                    }));
+                    downloadCSV(csvData, 'Overall_Rankings.csv');
+                    showToast('CSV downloaded (PDF unavailable)', 'success');
                     btn.disabled = false;
                     btn.innerHTML = '<i class="fas fa-file-pdf"></i> Download Overall PDF';
                     return;
                 }
 
+                // Proceed with PDF
                 const { data: attempts } = await _supabase
                     .from('Attempt')
                     .select('*, Student(name)')
@@ -4262,7 +4363,7 @@
             });
         });
 
-        console.log('🚀 NOORUSSALAM MADRASA — PDF download with robust fallback loader.');
+        console.log('🚀 NOORUSSALAM MADRASA — PDF download with multi-CDN fallback and CSV fallback.');
     </script>
 </body>
 </html>
