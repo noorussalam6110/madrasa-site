@@ -7,6 +7,11 @@
     <link href="https://fonts.googleapis.com/css2?family=Anek+Malayalam:wght@300;400;500;600;700;800&family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js">
     </script>
+    <!-- jsPDF + autoTable -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js">
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js">
+    </script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <style>
         /* ===== GLOBAL RESET ===== */
@@ -2384,6 +2389,10 @@
                 <div class="glass-card">
                     <h4 style="color:var(--gold);">🏆 Rankings</h4>
                     <div class="day-tabs" id="rankDayTabs"></div>
+                    <!-- Added Download PDF button for current day -->
+                    <div class="flex" style="justify-content:center; gap:12px; margin:12px 0;">
+                        <button class="btn btn-primary btn-sm" id="downloadDayRankBtn"><i class="fas fa-file-pdf"></i> Download Day PDF</button>
+                    </div>
                     <div class="overall-rank-btn-wrap">
                         <button class="btn" id="overallRankBtn"><i class="fas fa-trophy"></i> Overall Rank</button>
                     </div>
@@ -2408,6 +2417,10 @@
                     <button class="btn btn-outline btn-sm" id="closeOverallRankBtn"><i class="fas fa-times"></i></button>
                 </div>
                 <p class="text-muted">All days combined — top performers</p>
+                <!-- Added Download PDF button inside overall modal -->
+                <div class="flex" style="justify-content:center; margin:12px 0;">
+                    <button class="btn btn-primary btn-sm" id="downloadOverallRankBtn"><i class="fas fa-file-pdf"></i> Download Overall PDF</button>
+                </div>
                 <div class="admin-table-wrap">
                     <div id="overallRankModalContent" style="margin-top:16px;">
                         <div class="text-center text-muted">Loading...</div>
@@ -3817,7 +3830,13 @@
             }
         }
 
+        // ================================================================
+        // ADMIN RANKINGS with PDF download
+        // ================================================================
+        let currentRankingDay = 1; // track currently displayed day
+
         async function loadAdminRankings(day) {
+            currentRankingDay = day;
             const container = document.getElementById('adminRankListContainer');
             container.innerHTML = '<div class="text-center text-muted">Loading...</div>';
             document.getElementById('overallRankContainer').classList.add('hidden');
@@ -3866,6 +3885,176 @@
             }
         }
 
+        // ---- PDF generation for day rankings ----
+        document.getElementById('downloadDayRankBtn').addEventListener('click', function() {
+            downloadDayRanking(currentRankingDay);
+        });
+
+        async function downloadDayRanking(day) {
+            const btn = document.getElementById('downloadDayRankBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Generating...';
+            try {
+                const { data: attempts } = await _supabase
+                    .from('Attempt')
+                    .select('*, Student(name)')
+                    .eq('sessionDay', day)
+                    .eq('status', 'COMPLETED');
+                if (!attempts || attempts.length === 0) {
+                    showToast('No data for this day', 'error');
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fas fa-file-pdf"></i> Download Day PDF';
+                    return;
+                }
+                const ranked = attempts.map(a => ({
+                    ...a,
+                    timeTaken: Math.floor((new Date(a.endTime) - new Date(a.startTime)) / 1000)
+                }));
+                ranked.sort((a, b) => {
+                    if (a.score !== b.score) return (b.score || 0) - (a.score || 0);
+                    return (a.timeTaken || 9999) - (b.timeTaken || 9999);
+                });
+
+                const doc = new window.jspdf.jsPDF('l', 'mm', 'a4'); // landscape
+                const pageWidth = doc.internal.pageSize.getWidth();
+                const pageHeight = doc.internal.pageSize.getHeight();
+
+                doc.setFontSize(18);
+                doc.setTextColor(251, 191, 36);
+                doc.text('NOORUSSALAM MADRASA – Rankings', pageWidth / 2, 20, { align: 'center' });
+                doc.setFontSize(12);
+                doc.setTextColor(255, 255, 255);
+                doc.text(`Day ${day} – ${new Date().toLocaleDateString()}`, pageWidth / 2, 30, { align: 'center' });
+
+                const tableData = ranked.map((r, idx) => {
+                    const rank = idx + 1;
+                    return [rank, r.Student?.name || 'Unknown', r.score || 0, r.timeTaken || 0, formatDate(r.endTime)];
+                });
+
+                doc.autoTable({
+                    head: [
+                        ['Rank', 'Parent', 'Score', 'Time (sec)', 'Submitted']
+                    ],
+                    body: tableData,
+                    startY: 40,
+                    theme: 'dark',
+                    headStyles: {
+                        fillColor: [59, 130, 246],
+                        textColor: [255, 255, 255],
+                        fontStyle: 'bold'
+                    },
+                    bodyStyles: {
+                        textColor: [200, 200, 200]
+                    },
+                    alternateRowStyles: {
+                        fillColor: [30, 30, 30]
+                    },
+                    margin: { left: 10, right: 10 }
+                });
+
+                doc.save(`Rankings_Day${day}.pdf`);
+                showToast('✅ PDF downloaded', 'success');
+            } catch (err) {
+                showToast('Error generating PDF: ' + err.message, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-file-pdf"></i> Download Day PDF';
+            }
+        }
+
+        // ---- Overall Rank PDF ----
+        document.getElementById('downloadOverallRankBtn').addEventListener('click', function() {
+            downloadOverallRanking();
+        });
+
+        async function downloadOverallRanking() {
+            const btn = document.getElementById('downloadOverallRankBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Generating...';
+            try {
+                const { data: attempts } = await _supabase
+                    .from('Attempt')
+                    .select('*, Student(name)')
+                    .eq('status', 'COMPLETED');
+                if (!attempts || attempts.length === 0) {
+                    showToast('No data for overall ranking', 'error');
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fas fa-file-pdf"></i> Download Overall PDF';
+                    return;
+                }
+                const studentMap = {};
+                attempts.forEach(a => {
+                    const id = a.studentId;
+                    if (!studentMap[id]) {
+                        studentMap[id] = {
+                            studentId: id,
+                            name: a.Student?.name || 'Unknown',
+                            totalScore: 0,
+                            totalTime: 0,
+                            count: 0
+                        };
+                    }
+                    studentMap[id].totalScore += (a.score || 0);
+                    const timeTaken = Math.floor((new Date(a.endTime) - new Date(a.startTime)) / 1000);
+                    studentMap[id].totalTime += timeTaken;
+                    studentMap[id].count += 1;
+                });
+                const ranked = Object.values(studentMap).map(s => ({
+                    ...s,
+                    avgTime: Math.round(s.totalTime / s.count)
+                }));
+                ranked.sort((a, b) => {
+                    if (a.totalScore !== b.totalScore) return b.totalScore - a.totalScore;
+                    return a.avgTime - b.avgTime;
+                });
+
+                const doc = new window.jspdf.jsPDF('l', 'mm', 'a4');
+                const pageWidth = doc.internal.pageSize.getWidth();
+
+                doc.setFontSize(18);
+                doc.setTextColor(251, 191, 36);
+                doc.text('NOORUSSALAM MADRASA – Overall Rankings', pageWidth / 2, 20, { align: 'center' });
+                doc.setFontSize(12);
+                doc.setTextColor(255, 255, 255);
+                doc.text(`All Days Combined – ${new Date().toLocaleDateString()}`, pageWidth / 2, 30, { align: 'center' });
+
+                const tableData = ranked.map((r, idx) => {
+                    const rank = idx + 1;
+                    return [rank, r.name, r.totalScore, r.avgTime, r.count];
+                });
+
+                doc.autoTable({
+                    head: [
+                        ['Rank', 'Parent', 'Total Score', 'Avg Time (sec)', 'Attempts']
+                    ],
+                    body: tableData,
+                    startY: 40,
+                    theme: 'dark',
+                    headStyles: {
+                        fillColor: [59, 130, 246],
+                        textColor: [255, 255, 255],
+                        fontStyle: 'bold'
+                    },
+                    bodyStyles: {
+                        textColor: [200, 200, 200]
+                    },
+                    alternateRowStyles: {
+                        fillColor: [30, 30, 30]
+                    },
+                    margin: { left: 10, right: 10 }
+                });
+
+                doc.save('Overall_Rankings.pdf');
+                showToast('✅ Overall PDF downloaded', 'success');
+            } catch (err) {
+                showToast('Error generating PDF: ' + err.message, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-file-pdf"></i> Download Overall PDF';
+            }
+        }
+
+        // ---- Overall Rank Modal open ----
         document.getElementById('overallRankBtn').addEventListener('click', function() {
             document.getElementById('overallRankModal').classList.remove('hidden');
             loadOverallRank();
@@ -3981,8 +4170,7 @@
             });
         });
 
-        console.log('🚀 NOORUSSALAM MADRASA — Answer details with smaller font.');
-        console.log('✅ Font sizes reduced for compact view in answer details modal.');
+        console.log('🚀 NOORUSSALAM MADRASA — PDF download added for rankings.');
     </script>
 </body>
 </html>
