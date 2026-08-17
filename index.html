@@ -3458,7 +3458,7 @@
                     }
                 }, 1000);
 
-                showToast('✅ ക്വിസ് ആരംഭിച്ചു.!', 'success');
+                showToast('✅ ക്വിസ് ആരംഭിച്ചു. ഭാഗ്യം!', 'success');
             } catch (err) {
                 showToast(err.message, 'error');
             }
@@ -3863,7 +3863,7 @@
         }
 
         // ================================================================
-        // ADMIN RANKINGS – with ULTRA-RELIABLE PDF GENERATION
+        // ADMIN RANKINGS – CLEAN PDF (Portrait, Light Theme)
         // ================================================================
         let currentRankingDay = 1;
         let pdfBlobForPreview = null;
@@ -3919,10 +3919,9 @@
         }
 
         // ================================================================
-        // ULTRA-RELIABLE PDF LOADER (jsPDF only, autoTable optional)
+        // PDF LOADER (jsPDF only)
         // ================================================================
         let pdfReady = false;
-        let pdfLoadingPromise = null;
 
         function loadScript(src) {
             return new Promise((resolve, reject) => {
@@ -3937,20 +3936,16 @@
 
         async function loadPDFLibraries() {
             if (pdfReady) return true;
-
-            // Check if jsPDF already loaded (even without autoTable)
             if (typeof window.jspdf !== 'undefined' && window.jspdf.jsPDF) {
                 pdfReady = true;
                 return true;
             }
-
             const cdnList = [
                 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',
                 'https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js',
                 'https://unpkg.com/jspdf@2.5.1/dist/jspdf.umd.min.js'
             ];
-
-            // Also try to load autoTable but don't require it
+            // Also try to load autoTable for better styling, but not required
             const autoTableCDNs = [
                 'https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js',
                 'https://cdn.jsdelivr.net/npm/jspdf-autotable@3.5.31/dist/jspdf.plugin.autotable.js',
@@ -3962,15 +3957,11 @@
                     await loadScript(src);
                     await new Promise(r => setTimeout(r, 150));
                     if (typeof window.jspdf !== 'undefined' && window.jspdf.jsPDF) {
-                        // Try to load autoTable as well
                         for (const atSrc of autoTableCDNs) {
                             try {
                                 await loadScript(atSrc);
                                 await new Promise(r => setTimeout(r, 200));
-                                if (typeof window.jspdf.jsPDF.prototype.autoTable === 'function') {
-                                    // autoTable loaded successfully
-                                    break;
-                                }
+                                if (typeof window.jspdf.jsPDF.prototype.autoTable === 'function') break;
                             } catch (e) { /* ignore */ }
                         }
                         pdfReady = true;
@@ -3981,22 +3972,16 @@
             return false;
         }
 
-        // ---- Preload PDF libraries on page load ----
         (async function preloadPDF() {
             const loaded = await loadPDFLibraries();
-            if (loaded) {
-                console.log('✅ PDF libraries loaded successfully.');
-            } else {
-                console.warn('⚠️ jsPDF could not be loaded. CSV fallback will be used.');
-            }
+            if (loaded) console.log('✅ PDF libraries ready.');
+            else console.warn('⚠️ jsPDF not loaded. CSV fallback.');
         })();
 
-        // ---- Ensure PDF libraries are ready (with retry) ----
         async function ensurePDFLibraries() {
             if (pdfReady) return true;
             const loaded = await loadPDFLibraries();
             if (loaded) return true;
-            // One final retry
             await new Promise(r => setTimeout(r, 500));
             return await loadPDFLibraries();
         }
@@ -4017,7 +4002,7 @@
             URL.revokeObjectURL(url);
         }
 
-        // ---- PDF Preview Modal ----
+        // ---- PDF Preview ----
         function showPdfPreview(blob) {
             pdfBlobForPreview = blob;
             const url = URL.createObjectURL(blob);
@@ -4028,15 +4013,12 @@
         document.getElementById('closePdfPreviewBtn').addEventListener('click', function() {
             document.getElementById('pdfPreviewModal').classList.add('hidden');
             const iframe = document.getElementById('pdfPreviewFrame');
-            if (iframe.src) {
-                URL.revokeObjectURL(iframe.src);
-                iframe.src = '';
-            }
+            if (iframe.src) { URL.revokeObjectURL(iframe.src);
+                iframe.src = ''; }
         });
         document.getElementById('pdfPreviewModal').addEventListener('click', function(e) {
             if (e.target === this) document.getElementById('closePdfPreviewBtn').click();
         });
-
         document.getElementById('pdfDownloadBtn').addEventListener('click', function() {
             if (pdfBlobForPreview) {
                 const url = URL.createObjectURL(pdfBlobForPreview);
@@ -4051,112 +4033,120 @@
             }
         });
 
-        // ---- Generate Styled PDF with manual fallback if autoTable missing ----
+        // ================================================================
+        // GENERATE STYLED PDF (Portrait, Clean Light Theme)
+        // ================================================================
         function generateStyledPDF(tableData, title, subtitle) {
-            // Check if jsPDF is available
             if (typeof window.jspdf === 'undefined' || !window.jspdf.jsPDF) {
                 throw new Error('jsPDF not available');
             }
 
-            const doc = new window.jspdf.jsPDF('l', 'mm', 'a4');
+            const doc = new window.jspdf.jsPDF('p', 'mm', 'a4');
             const pageWidth = doc.internal.pageSize.getWidth();
             const pageHeight = doc.internal.pageSize.getHeight();
 
             // Header
-            doc.setFontSize(20);
-            doc.setTextColor(251, 191, 36);
-            doc.text('SKSBV NOORUSSALAM MADRASA', pageWidth / 2, 25, { align: 'center' });
-
-            doc.setDrawColor(251, 191, 36);
-            doc.setLineWidth(0.5);
-            doc.line(30, 32, pageWidth - 30, 32);
-
-            doc.setFontSize(16);
-            doc.setTextColor(255, 255, 255);
-            doc.text(title, pageWidth / 2, 42, { align: 'center' });
+            doc.setFontSize(18);
+            doc.setTextColor(0, 0, 0);
+            doc.text('SKSBV NOORUSSALAM MADRASA', pageWidth / 2, 20, { align: 'center' });
 
             doc.setFontSize(12);
-            doc.setTextColor(200, 200, 200);
-            doc.text(subtitle, pageWidth / 2, 50, { align: 'center' });
+            doc.setTextColor(0, 0, 0);
+            doc.text('ONLINE QUIZ COMPETITION FOR PARENTS', pageWidth / 2, 28, { align: 'center' });
 
-            // If autoTable is available, use it
+            doc.setDrawColor(0, 0, 0);
+            doc.setLineWidth(0.5);
+            doc.line(20, 32, pageWidth - 20, 32);
+
+            doc.setFontSize(14);
+            doc.setTextColor(0, 0, 0);
+            doc.text(title, pageWidth / 2, 40, { align: 'center' });
+
+            doc.setFontSize(10);
+            doc.setTextColor(80, 80, 80);
+            doc.text(subtitle, pageWidth / 2, 47, { align: 'center' });
+
+            // Table using autoTable if available
             if (typeof doc.autoTable === 'function') {
                 doc.autoTable({
                     head: [['Rank', 'Parent', 'Score', 'Time (sec)', 'Submitted']],
                     body: tableData,
-                    startY: 58,
+                    startY: 54,
                     theme: 'striped',
                     headStyles: {
-                        fillColor: [59, 130, 246],
-                        textColor: [255, 255, 255],
+                        fillColor: [220, 220, 220],
+                        textColor: [0, 0, 0],
                         fontStyle: 'bold',
                         halign: 'center'
                     },
                     bodyStyles: {
-                        textColor: [220, 220, 220],
-                        halign: 'center'
+                        textColor: [0, 0, 0],
+                        halign: 'center',
+                        fontSize: 9
                     },
                     alternateRowStyles: {
-                        fillColor: [40, 40, 60]
+                        fillColor: [240, 240, 240]
                     },
-                    margin: { left: 10, right: 10 },
+                    margin: { left: 15, right: 15 },
                     didDrawPage: function(data) {
                         const pageNumber = doc.internal.getCurrentPageInfo().pageNumber;
                         const totalPages = doc.internal.getNumberOfPages();
                         doc.setFontSize(8);
                         doc.setTextColor(150, 150, 150);
-                        doc.text(`Page ${pageNumber} of ${totalPages}`, pageWidth - 20, pageHeight - 10, { align: 'right' });
+                        doc.text(`Page ${pageNumber} of ${totalPages}`, pageWidth - 15, pageHeight - 10, { align: 'right' });
                     }
                 });
                 return doc;
             }
 
-            // ===== MANUAL TABLE DRAWING (fallback) =====
+            // ===== MANUAL TABLE FALLBACK (Clean, Light) =====
             console.warn('autoTable not available, using manual table drawing.');
-            const startX = 20;
-            let startY = 65;
-            const rowHeight = 8;
-            const colWidths = [20, 50, 30, 30, 50];
+            const startX = 15;
+            let startY = 54;
+            const rowHeight = 7;
+            const colWidths = [15, 55, 25, 25, 40];
             const totalWidth = colWidths.reduce((a, b) => a + b, 0);
             const headers = ['Rank', 'Parent', 'Score', 'Time (sec)', 'Submitted'];
 
-            // Draw headers
-            doc.setFontSize(10);
-            doc.setTextColor(255, 255, 255);
-            doc.setFillColor(59, 130, 246);
-            doc.rect(startX, startY - 5, totalWidth, rowHeight + 2, 'F');
+            // Headers
+            doc.setFontSize(9);
+            doc.setTextColor(0, 0, 0);
+            doc.setFillColor(220, 220, 220);
+            doc.rect(startX, startY - 4, totalWidth, rowHeight + 1, 'F');
             let xPos = startX;
             headers.forEach((h, i) => {
-                doc.text(h, xPos + 2, startY + 2);
+                doc.text(h, xPos + 2, startY + 1);
                 xPos += colWidths[i];
             });
-            startY += rowHeight + 2;
+            startY += rowHeight + 1;
 
-            // Draw rows
-            doc.setFontSize(9);
-            doc.setTextColor(220, 220, 220);
+            // Rows
+            doc.setFontSize(8);
+            doc.setTextColor(0, 0, 0);
             tableData.forEach((row, idx) => {
                 const yPos = startY + idx * rowHeight;
                 if (idx % 2 === 0) {
-                    doc.setFillColor(40, 40, 60);
-                    doc.rect(startX, yPos - 4, totalWidth, rowHeight, 'F');
+                    doc.setFillColor(240, 240, 240);
+                } else {
+                    doc.setFillColor(255, 255, 255);
                 }
+                doc.rect(startX, yPos - 4, totalWidth, rowHeight, 'F');
                 xPos = startX;
                 row.forEach((cell, i) => {
-                    doc.text(String(cell), xPos + 2, yPos + 2);
+                    doc.text(String(cell), xPos + 2, yPos + 1);
                     xPos += colWidths[i];
                 });
             });
 
-            // Footer
             doc.setFontSize(8);
             doc.setTextColor(150, 150, 150);
-            doc.text(`Page 1 of 1`, pageWidth - 20, pageHeight - 10, { align: 'right' });
-
+            doc.text('Page 1 of 1', pageWidth - 15, pageHeight - 10, { align: 'right' });
             return doc;
         }
 
-        // ---- Download Day PDF ----
+        // ================================================================
+        // DOWNLOAD FUNCTIONS
+        // ================================================================
         document.getElementById('downloadDayRankBtn').addEventListener('click', function() {
             downloadDayRanking(currentRankingDay);
         });
@@ -4168,57 +4158,45 @@
             try {
                 const loaded = await ensurePDFLibraries();
                 if (!loaded) {
-                    showToast('jsPDF could not load. Downloading CSV instead...', 'info');
-                    const { data: attempts } = await _supabase
-                        .from('Attempt')
-                        .select('*, Student(name)')
-                        .eq('sessionDay', day)
-                        .eq('status', 'COMPLETED');
-                    if (!attempts || attempts.length === 0) {
-                        showToast('No data for this day', 'error');
+                    showToast('jsPDF not loaded. Downloading CSV...', 'info');
+                    const { data: attempts } = await _supabase.from('Attempt').select('*, Student(name)').eq('sessionDay',
+                        day).eq('status', 'COMPLETED');
+                    if (!attempts || attempts.length === 0) { showToast('No data', 'error');
                         btn.disabled = false;
-                        btn.innerHTML = '<i class="fas fa-file-pdf"></i> Download Day PDF';
-                        return;
-                    }
-                    const ranked = attempts.map(a => ({ ...a, timeTaken: Math.floor((new Date(a.endTime) - new Date(a.startTime)) / 1000) }));
+                        btn.innerHTML = '<i class="fas fa-file-pdf"></i> Download Day PDF'; return; }
+                    const ranked = attempts.map(a => ({ ...a, timeTaken: Math.floor((new Date(a.endTime) - new Date(a
+                            .startTime)) / 1000) }));
                     ranked.sort((a, b) => (b.score || 0) - (a.score || 0) || (a.timeTaken || 9999) - (b.timeTaken || 9999));
-                    const csvData = ranked.map((r, idx) => ({ Rank: idx + 1, Parent: r.Student?.name || 'Unknown', Score: r.score || 0, 'Time (sec)': r.timeTaken || 0, Submitted: formatDate(r.endTime) }));
+                    const csvData = ranked.map((r, idx) => ({ Rank: idx + 1, Parent: r.Student?.name || 'Unknown',
+                        Score: r.score || 0, 'Time (sec)': r.timeTaken || 0, Submitted: formatDate(r.endTime) }));
                     downloadCSV(csvData, `Rankings_Day${day}.csv`);
-                    showToast('CSV downloaded (PDF unavailable)', 'success');
+                    showToast('CSV downloaded', 'success');
                     btn.disabled = false;
                     btn.innerHTML = '<i class="fas fa-file-pdf"></i> Download Day PDF';
                     return;
                 }
 
-                const { data: attempts } = await _supabase
-                    .from('Attempt')
-                    .select('*, Student(name)')
-                    .eq('sessionDay', day)
-                    .eq('status', 'COMPLETED');
-                if (!attempts || attempts.length === 0) {
-                    showToast('No data for this day', 'error');
+                const { data: attempts } = await _supabase.from('Attempt').select('*, Student(name)').eq('sessionDay',
+                    day).eq('status', 'COMPLETED');
+                if (!attempts || attempts.length === 0) { showToast('No data', 'error');
                     btn.disabled = false;
-                    btn.innerHTML = '<i class="fas fa-file-pdf"></i> Download Day PDF';
-                    return;
-                }
-                const ranked = attempts.map(a => ({ ...a, timeTaken: Math.floor((new Date(a.endTime) - new Date(a.startTime)) / 1000) }));
+                    btn.innerHTML = '<i class="fas fa-file-pdf"></i> Download Day PDF'; return; }
+                const ranked = attempts.map(a => ({ ...a, timeTaken: Math.floor((new Date(a.endTime) - new Date(a
+                        .startTime)) / 1000) }));
                 ranked.sort((a, b) => (b.score || 0) - (a.score || 0) || (a.timeTaken || 9999) - (b.timeTaken || 9999));
-                const tableData = ranked.map((r, idx) => [idx + 1, r.Student?.name || 'Unknown', r.score || 0, r.timeTaken || 0, formatDate(r.endTime)]);
+                const tableData = ranked.map((r, idx) => [idx + 1, r.Student?.name || 'Unknown', r.score || 0, r
+                    .timeTaken || 0, formatDate(r.endTime)
+                ]);
 
                 const doc = generateStyledPDF(tableData, `Day ${day} Rankings`, `Generated on ${new Date().toLocaleDateString('ml-IN', { timeZone: 'Asia/Kolkata' })}`);
                 const blob = doc.output('blob');
                 showPdfPreview(blob);
-                showToast('📄 PDF ready for preview', 'success');
-            } catch (err) {
-                showToast('Error generating PDF: ' + err.message, 'error');
-                console.error(err);
-            } finally {
-                btn.disabled = false;
-                btn.innerHTML = '<i class="fas fa-file-pdf"></i> Download Day PDF';
-            }
+                showToast('📄 PDF ready', 'success');
+            } catch (err) { showToast('Error: ' + err.message, 'error');
+                console.error(err); } finally { btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-file-pdf"></i> Download Day PDF'; }
         }
 
-        // ---- Download Overall PDF ----
         document.getElementById('downloadOverallRankBtn').addEventListener('click', function() {
             downloadOverallRanking();
         });
@@ -4230,57 +4208,45 @@
             try {
                 const loaded = await ensurePDFLibraries();
                 if (!loaded) {
-                    showToast('jsPDF could not load. Downloading CSV instead...', 'info');
-                    const { data: attempts } = await _supabase
-                        .from('Attempt')
-                        .select('*, Student(name)')
-                        .eq('status', 'COMPLETED');
-                    if (!attempts || attempts.length === 0) {
-                        showToast('No data for overall ranking', 'error');
+                    showToast('jsPDF not loaded. Downloading CSV...', 'info');
+                    const { data: attempts } = await _supabase.from('Attempt').select('*, Student(name)').eq('status',
+                        'COMPLETED');
+                    if (!attempts || attempts.length === 0) { showToast('No data', 'error');
                         btn.disabled = false;
-                        btn.innerHTML = '<i class="fas fa-file-pdf"></i> Download Overall PDF';
-                        return;
-                    }
+                        btn.innerHTML = '<i class="fas fa-file-pdf"></i> Download Overall PDF'; return; }
                     const studentMap = {};
                     attempts.forEach(a => {
                         const id = a.studentId;
-                        if (!studentMap[id]) {
-                            studentMap[id] = { studentId: id, name: a.Student?.name || 'Unknown', totalScore: 0, totalTime: 0, count: 0 };
-                        }
+                        if (!studentMap[id]) studentMap[id] = { studentId: id, name: a.Student?.name || 'Unknown',
+                            totalScore: 0, totalTime: 0, count: 0 };
                         studentMap[id].totalScore += (a.score || 0);
-                        const timeTaken = Math.floor((new Date(a.endTime) - new Date(a.startTime)) / 1000);
-                        studentMap[id].totalTime += timeTaken;
+                        studentMap[id].totalTime += Math.floor((new Date(a.endTime) - new Date(a.startTime)) / 1000);
                         studentMap[id].count += 1;
                     });
-                    const ranked = Object.values(studentMap).map(s => ({ ...s, avgTime: Math.round(s.totalTime / s.count) }));
+                    const ranked = Object.values(studentMap).map(s => ({ ...s, avgTime: Math.round(s.totalTime / s
+                            .count) }));
                     ranked.sort((a, b) => (b.totalScore - a.totalScore) || (a.avgTime - b.avgTime));
-                    const csvData = ranked.map((r, idx) => ({ Rank: idx + 1, Parent: r.name, 'Total Score': r.totalScore, 'Avg Time (sec)': r.avgTime, Attempts: r.count }));
+                    const csvData = ranked.map((r, idx) => ({ Rank: idx + 1, Parent: r.name, 'Total Score': r
+                            .totalScore, 'Avg Time (sec)': r.avgTime, Attempts: r.count }));
                     downloadCSV(csvData, 'Overall_Rankings.csv');
-                    showToast('CSV downloaded (PDF unavailable)', 'success');
+                    showToast('CSV downloaded', 'success');
                     btn.disabled = false;
                     btn.innerHTML = '<i class="fas fa-file-pdf"></i> Download Overall PDF';
                     return;
                 }
 
-                const { data: attempts } = await _supabase
-                    .from('Attempt')
-                    .select('*, Student(name)')
-                    .eq('status', 'COMPLETED');
-                if (!attempts || attempts.length === 0) {
-                    showToast('No data for overall ranking', 'error');
+                const { data: attempts } = await _supabase.from('Attempt').select('*, Student(name)').eq('status',
+                    'COMPLETED');
+                if (!attempts || attempts.length === 0) { showToast('No data', 'error');
                     btn.disabled = false;
-                    btn.innerHTML = '<i class="fas fa-file-pdf"></i> Download Overall PDF';
-                    return;
-                }
+                    btn.innerHTML = '<i class="fas fa-file-pdf"></i> Download Overall PDF'; return; }
                 const studentMap = {};
                 attempts.forEach(a => {
                     const id = a.studentId;
-                    if (!studentMap[id]) {
-                        studentMap[id] = { studentId: id, name: a.Student?.name || 'Unknown', totalScore: 0, totalTime: 0, count: 0 };
-                    }
+                    if (!studentMap[id]) studentMap[id] = { studentId: id, name: a.Student?.name || 'Unknown',
+                        totalScore: 0, totalTime: 0, count: 0 };
                     studentMap[id].totalScore += (a.score || 0);
-                    const timeTaken = Math.floor((new Date(a.endTime) - new Date(a.startTime)) / 1000);
-                    studentMap[id].totalTime += timeTaken;
+                    studentMap[id].totalTime += Math.floor((new Date(a.endTime) - new Date(a.startTime)) / 1000);
                     studentMap[id].count += 1;
                 });
                 const ranked = Object.values(studentMap).map(s => ({ ...s, avgTime: Math.round(s.totalTime / s.count) }));
@@ -4290,14 +4256,10 @@
                 const doc = generateStyledPDF(tableData, 'Overall Rankings (All Days)', `Generated on ${new Date().toLocaleDateString('ml-IN', { timeZone: 'Asia/Kolkata' })}`);
                 const blob = doc.output('blob');
                 showPdfPreview(blob);
-                showToast('📄 Overall PDF ready for preview', 'success');
-            } catch (err) {
-                showToast('Error generating PDF: ' + err.message, 'error');
-                console.error(err);
-            } finally {
-                btn.disabled = false;
-                btn.innerHTML = '<i class="fas fa-file-pdf"></i> Download Overall PDF';
-            }
+                showToast('📄 Overall PDF ready', 'success');
+            } catch (err) { showToast('Error: ' + err.message, 'error');
+                console.error(err); } finally { btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-file-pdf"></i> Download Overall PDF'; }
         }
 
         // ---- Overall Rank Modal ----
@@ -4305,7 +4267,6 @@
             document.getElementById('overallRankModal').classList.remove('hidden');
             loadOverallRank();
         });
-
         document.getElementById('closeOverallRankBtn').addEventListener('click', function() {
             document.getElementById('overallRankModal').classList.add('hidden');
         });
@@ -4317,39 +4278,21 @@
             const container = document.getElementById('overallRankModalContent');
             container.innerHTML = '<div class="text-center text-muted"><i class="fas fa-spinner fa-pulse"></i> Loading...</div>';
             try {
-                const { data: attempts } = await _supabase
-                    .from('Attempt')
-                    .select('*, Student(name)')
-                    .eq('status', 'COMPLETED');
-                if (!attempts || attempts.length === 0) {
-                    container.innerHTML = '<div class="text-center text-muted">No submissions yet.</div>';
-                    return;
-                }
+                const { data: attempts } = await _supabase.from('Attempt').select('*, Student(name)').eq('status',
+                    'COMPLETED');
+                if (!attempts || attempts.length === 0) { container.innerHTML =
+                        '<div class="text-center text-muted">No submissions yet.</div>'; return; }
                 const studentMap = {};
                 attempts.forEach(a => {
                     const id = a.studentId;
-                    if (!studentMap[id]) {
-                        studentMap[id] = {
-                            studentId: id,
-                            name: a.Student?.name || 'Unknown',
-                            totalScore: 0,
-                            totalTime: 0,
-                            count: 0
-                        };
-                    }
+                    if (!studentMap[id]) studentMap[id] = { studentId: id, name: a.Student?.name || 'Unknown',
+                        totalScore: 0, totalTime: 0, count: 0 };
                     studentMap[id].totalScore += (a.score || 0);
-                    const timeTaken = Math.floor((new Date(a.endTime) - new Date(a.startTime)) / 1000);
-                    studentMap[id].totalTime += timeTaken;
+                    studentMap[id].totalTime += Math.floor((new Date(a.endTime) - new Date(a.startTime)) / 1000);
                     studentMap[id].count += 1;
                 });
-                const ranked = Object.values(studentMap).map(s => ({
-                    ...s,
-                    avgTime: Math.round(s.totalTime / s.count)
-                }));
-                ranked.sort((a, b) => {
-                    if (a.totalScore !== b.totalScore) return b.totalScore - a.totalScore;
-                    return a.avgTime - b.avgTime;
-                });
+                const ranked = Object.values(studentMap).map(s => ({ ...s, avgTime: Math.round(s.totalTime / s.count) }));
+                ranked.sort((a, b) => (b.totalScore - a.totalScore) || (a.avgTime - b.avgTime));
                 let html =
                     `<table><thead><tr><th>Rank</th><th>Parent</th><th>Total Score</th><th>Avg Time</th><th>Attempts</th></tr></thead><tbody>`;
                 ranked.forEach((r, idx) => {
@@ -4358,20 +4301,13 @@
                     if (rank === 1) medal = '🥇 ';
                     else if (rank === 2) medal = '🥈 ';
                     else if (rank === 3) medal = '🥉 ';
-                    html += `<tr>
-                        <td><strong>${medal}${rank}</strong></td>
-                        <td>${r.name}</td>
-                        <td style="color:#fbbf24;font-weight:700;">${r.totalScore}</td>
-                        <td>${r.avgTime} sec</td>
-                        <td>${r.count}</td>
-                    </tr>`;
+                    html += `<tr><td><strong>${medal}${rank}</strong></td><td>${r.name}</td><td style="color:#fbbf24;font-weight:700;">${r.totalScore}</td><td>${r.avgTime} sec</td><td>${r.count}</td></tr>`;
                 });
                 html += `</tbody></table>`;
                 container.innerHTML = html;
-            } catch (err) {
-                container.innerHTML = '<div class="text-danger text-center">Error loading overall rank.</div>';
-                showToast(err.message, 'error');
-            }
+            } catch (err) { container.innerHTML =
+                '<div class="text-danger text-center">Error loading overall rank.</div>';
+                showToast(err.message, 'error'); }
         }
 
         // ================================================================
@@ -4398,25 +4334,16 @@
         // ================================================================
         const savedId = localStorage.getItem('lastId');
         if (savedId) document.getElementById('loginIdInput').value = savedId;
-
         document.body.classList.add('login-mode');
         document.body.classList.remove('dashboard-mode');
 
-        // ================================================================
-        // STICKY HEADER SCROLL EFFECT
-        // ================================================================
         document.addEventListener('scroll', function() {
-            const headers = document.querySelectorAll('.dashboard-header');
-            headers.forEach(header => {
-                if (window.scrollY > 10) {
-                    header.classList.add('scrolled');
-                } else {
-                    header.classList.remove('scrolled');
-                }
+            document.querySelectorAll('.dashboard-header').forEach(h => {
+                h.classList.toggle('scrolled', window.scrollY > 10);
             });
         });
 
-        console.log('🚀 NOORUSSALAM MADRASA — PDF with manual fallback (autoTable optional)');
+        console.log('🚀 NOORUSSALAM MADRASA — PDF: Portrait, Light Theme, Clean Table.');
     </script>
 </body>
 </html>
