@@ -7,11 +7,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Anek+Malayalam:wght@300;400;500;600;700;800&family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js">
     </script>
-    <!-- jsPDF + autoTable – these will be used if available, otherwise dynamic loader will fetch them -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js">
-    </script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js">
-    </script>
+    <!-- jsPDF + autoTable – will be loaded dynamically if needed -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <style>
         /* ===== GLOBAL RESET ===== */
@@ -2016,6 +2012,31 @@
         ::-webkit-scrollbar-thumb:hover {
             background: rgba(251, 191, 36, 0.5);
         }
+
+        /* ===== PDF PREVIEW MODAL ===== */
+        #pdfPreviewModal .modal-glass {
+            max-width: 95%;
+            max-height: 95vh;
+            padding: 12px;
+            width: 95%;
+        }
+        #pdfPreviewModal iframe {
+            width: 100%;
+            height: 75vh;
+            border: none;
+            border-radius: 8px;
+            background: #1a1a2e;
+        }
+        @media (max-width: 768px) {
+            #pdfPreviewModal .modal-glass {
+                padding: 8px;
+                max-width: 100%;
+                max-height: 98vh;
+            }
+            #pdfPreviewModal iframe {
+                height: 65vh;
+            }
+        }
     </style>
 </head>
 <body>
@@ -2405,6 +2426,20 @@
                         </div>
                     </div>
                 </div>
+            </div>
+        </div>
+
+        <!-- ===== PDF PREVIEW MODAL ===== -->
+        <div id="pdfPreviewModal" class="modal-overlay hidden">
+            <div class="modal-glass">
+                <div class="flex-between" style="margin-bottom:10px;">
+                    <h3 style="color:var(--gold);"><i class="fas fa-file-pdf"></i> PDF Preview</h3>
+                    <div class="flex" style="gap:8px;">
+                        <button class="btn btn-success btn-sm" id="pdfDownloadBtn"><i class="fas fa-download"></i> Download</button>
+                        <button class="btn btn-outline btn-sm" id="closePdfPreviewBtn"><i class="fas fa-times"></i></button>
+                    </div>
+                </div>
+                <iframe id="pdfPreviewFrame" style="width:100%; height:75vh; border:none; border-radius:8px; background:#1a1a2e;"></iframe>
             </div>
         </div>
 
@@ -3829,9 +3864,10 @@
         }
 
         // ================================================================
-        // ADMIN RANKINGS with ROBUST PDF LOADER (MULTI-CDN)
+        // ADMIN RANKINGS with PDF PREVIEW & ENHANCED LAYOUT
         // ================================================================
         let currentRankingDay = 1;
+        let pdfBlobForPreview = null;
 
         async function loadAdminRankings(day) {
             currentRankingDay = day;
@@ -3906,50 +3942,35 @@
 
             pdfLoadAttempted = true;
 
-            // Check if already loaded (from static tags or previous dynamic load)
+            // Check if already loaded
             if (typeof window.jspdf !== 'undefined' && window.jspdf.jsPDF &&
                 typeof window.jspdf.jsPDF.prototype.autoTable === 'function') {
                 pdfLoaded = true;
                 return true;
             }
 
-            // List of CDN sources to try (jsPDF + autoTable)
             const cdnSources = [
-                // cdnjs
-                {
-                    jsPDF: 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',
-                    autoTable: 'https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js'
-                },
-                // jsdelivr
-                {
-                    jsPDF: 'https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js',
-                    autoTable: 'https://cdn.jsdelivr.net/npm/jspdf-autotable@3.5.31/dist/jspdf.plugin.autotable.js'
-                },
-                // unpkg
-                {
-                    jsPDF: 'https://unpkg.com/jspdf@2.5.1/dist/jspdf.umd.min.js',
-                    autoTable: 'https://unpkg.com/jspdf-autotable@3.5.31/dist/jspdf.plugin.autotable.js'
-                }
+                { jsPDF: 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',
+                    autoTable: 'https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js' },
+                { jsPDF: 'https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js',
+                    autoTable: 'https://cdn.jsdelivr.net/npm/jspdf-autotable@3.5.31/dist/jspdf.plugin.autotable.js' },
+                { jsPDF: 'https://unpkg.com/jspdf@2.5.1/dist/jspdf.umd.min.js',
+                    autoTable: 'https://unpkg.com/jspdf-autotable@3.5.31/dist/jspdf.plugin.autotable.js' }
             ];
 
-            for (const source of cdnSources) {
+            for (const src of cdnSources) {
                 try {
-                    // Load jsPDF
-                    await loadScript(source.jsPDF);
-                    // Wait a bit for it to initialize
+                    await loadScript(src.jsPDF);
                     await new Promise(r => setTimeout(r, 100));
-                    // Load autoTable
-                    await loadScript(source.autoTable);
+                    await loadScript(src.autoTable);
                     await new Promise(r => setTimeout(r, 200));
 
-                    // Check if autoTable is now available
                     if (typeof window.jspdf !== 'undefined' && window.jspdf.jsPDF &&
                         typeof window.jspdf.jsPDF.prototype.autoTable === 'function') {
                         pdfLoaded = true;
                         return true;
                     }
 
-                    // If still not attached, try manual attach
                     if (typeof window.jspdf !== 'undefined' && window.jspdf.plugin &&
                         typeof window.jspdf.plugin.autotable === 'function') {
                         try {
@@ -3959,18 +3980,13 @@
                         } catch (e) { /* ignore */ }
                     }
                 } catch (e) {
-                    console.warn('PDF load attempt failed:', e);
-                    // Continue to next CDN
+                    console.warn('PDF load failed:', e);
                 }
             }
-
-            // If all CDNs fail, try one more time with a different approach: load both from the same CDN (jsdelivr combined?)
-            // Not needed; we already tried.
-
             return false;
         }
 
-        // ---- Helper to generate CSV fallback ----
+        // ---- CSV fallback ----
         function downloadCSV(data, filename) {
             const header = Object.keys(data[0] || {}).join(',');
             const rows = data.map(row => Object.values(row).join(','));
@@ -3986,7 +4002,102 @@
             URL.revokeObjectURL(url);
         }
 
-        // ---- Download Day PDF (with CSV fallback) ----
+        // ---- PDF Preview Modal ----
+        function showPdfPreview(blob) {
+            pdfBlobForPreview = blob;
+            const url = URL.createObjectURL(blob);
+            document.getElementById('pdfPreviewFrame').src = url;
+            document.getElementById('pdfPreviewModal').classList.remove('hidden');
+        }
+
+        document.getElementById('closePdfPreviewBtn').addEventListener('click', function() {
+            document.getElementById('pdfPreviewModal').classList.add('hidden');
+            // Revoke the blob URL to free memory
+            const iframe = document.getElementById('pdfPreviewFrame');
+            if (iframe.src) {
+                URL.revokeObjectURL(iframe.src);
+                iframe.src = '';
+            }
+        });
+        // Also close on overlay click
+        document.getElementById('pdfPreviewModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                document.getElementById('closePdfPreviewBtn').click();
+            }
+        });
+
+        document.getElementById('pdfDownloadBtn').addEventListener('click', function() {
+            if (pdfBlobForPreview) {
+                const url = URL.createObjectURL(pdfBlobForPreview);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'Rankings.pdf';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                showToast('✅ PDF downloaded', 'success');
+            }
+        });
+
+        // ---- Generate PDF with enhanced layout ----
+        function generateStyledPDF(tableData, title, subtitle) {
+            const doc = new window.jspdf.jsPDF('l', 'mm', 'a4');
+            const pageWidth = doc.internal.pageSize.getWidth();
+            const pageHeight = doc.internal.pageSize.getHeight();
+
+            // Header
+            doc.setFontSize(20);
+            doc.setTextColor(251, 191, 36);
+            doc.text('SKSBV NOORUSSALAM MADRASA', pageWidth / 2, 25, { align: 'center' });
+
+            // Gold decorative line
+            doc.setDrawColor(251, 191, 36);
+            doc.setLineWidth(0.5);
+            doc.line(30, 32, pageWidth - 30, 32);
+
+            doc.setFontSize(16);
+            doc.setTextColor(255, 255, 255);
+            doc.text(title, pageWidth / 2, 42, { align: 'center' });
+
+            doc.setFontSize(12);
+            doc.setTextColor(200, 200, 200);
+            doc.text(subtitle, pageWidth / 2, 50, { align: 'center' });
+
+            // Table
+            doc.autoTable({
+                head: [['Rank', 'Parent', 'Score', 'Time (sec)', 'Submitted']],
+                body: tableData,
+                startY: 58,
+                theme: 'striped',
+                headStyles: {
+                    fillColor: [59, 130, 246],
+                    textColor: [255, 255, 255],
+                    fontStyle: 'bold',
+                    halign: 'center'
+                },
+                bodyStyles: {
+                    textColor: [220, 220, 220],
+                    halign: 'center'
+                },
+                alternateRowStyles: {
+                    fillColor: [40, 40, 60]
+                },
+                margin: { left: 10, right: 10 },
+                didDrawPage: function(data) {
+                    // Footer with page number
+                    const pageNumber = doc.internal.getCurrentPageInfo().pageNumber;
+                    const totalPages = doc.internal.getNumberOfPages();
+                    doc.setFontSize(8);
+                    doc.setTextColor(150, 150, 150);
+                    doc.text(`Page ${pageNumber} of ${totalPages}`, pageWidth - 20, pageHeight - 10, { align: 'right' });
+                }
+            });
+
+            return doc;
+        }
+
+        // ---- Download Day PDF with Preview ----
         document.getElementById('downloadDayRankBtn').addEventListener('click', function() {
             downloadDayRanking(currentRankingDay);
         });
@@ -3994,12 +4105,11 @@
         async function downloadDayRanking(day) {
             const btn = document.getElementById('downloadDayRankBtn');
             btn.disabled = true;
-            btn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Generating...';
+            btn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Preparing...';
             try {
                 const loaded = await ensurePDFLibraries();
                 if (!loaded) {
                     showToast('PDF library unavailable. Downloading CSV instead...', 'info');
-                    // Fetch data and generate CSV
                     const { data: attempts } = await _supabase
                         .from('Attempt')
                         .select('*, Student(name)')
@@ -4033,7 +4143,7 @@
                     return;
                 }
 
-                // Proceed with PDF generation
+                // Fetch data
                 const { data: attempts } = await _supabase
                     .from('Attempt')
                     .select('*, Student(name)')
@@ -4054,44 +4164,16 @@
                     return (a.timeTaken || 9999) - (b.timeTaken || 9999);
                 });
 
-                const doc = new window.jspdf.jsPDF('l', 'mm', 'a4');
-                const pageWidth = doc.internal.pageSize.getWidth();
-
-                doc.setFontSize(18);
-                doc.setTextColor(251, 191, 36);
-                doc.text('NOORUSSALAM MADRASA – Rankings', pageWidth / 2, 20, { align: 'center' });
-                doc.setFontSize(12);
-                doc.setTextColor(255, 255, 255);
-                doc.text(`Day ${day} – ${new Date().toLocaleDateString()}`, pageWidth / 2, 30, { align: 'center' });
-
                 const tableData = ranked.map((r, idx) => {
                     const rank = idx + 1;
                     return [rank, r.Student?.name || 'Unknown', r.score || 0, r.timeTaken || 0, formatDate(r.endTime)];
                 });
 
-                doc.autoTable({
-                    head: [
-                        ['Rank', 'Parent', 'Score', 'Time (sec)', 'Submitted']
-                    ],
-                    body: tableData,
-                    startY: 40,
-                    theme: 'dark',
-                    headStyles: {
-                        fillColor: [59, 130, 246],
-                        textColor: [255, 255, 255],
-                        fontStyle: 'bold'
-                    },
-                    bodyStyles: {
-                        textColor: [200, 200, 200]
-                    },
-                    alternateRowStyles: {
-                        fillColor: [30, 30, 30]
-                    },
-                    margin: { left: 10, right: 10 }
-                });
+                const doc = generateStyledPDF(tableData, `Day ${day} Rankings`, `Generated on ${new Date().toLocaleDateString('ml-IN', { timeZone: 'Asia/Kolkata' })}`);
 
-                doc.save(`Rankings_Day${day}.pdf`);
-                showToast('✅ PDF downloaded', 'success');
+                const blob = doc.output('blob');
+                showPdfPreview(blob);
+                showToast('📄 PDF ready for preview', 'success');
             } catch (err) {
                 showToast('Error generating PDF: ' + err.message, 'error');
                 console.error(err);
@@ -4101,7 +4183,7 @@
             }
         }
 
-        // ---- Download Overall PDF (with CSV fallback) ----
+        // ---- Download Overall PDF with Preview ----
         document.getElementById('downloadOverallRankBtn').addEventListener('click', function() {
             downloadOverallRanking();
         });
@@ -4109,7 +4191,7 @@
         async function downloadOverallRanking() {
             const btn = document.getElementById('downloadOverallRankBtn');
             btn.disabled = true;
-            btn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Generating...';
+            btn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Preparing...';
             try {
                 const loaded = await ensurePDFLibraries();
                 if (!loaded) {
@@ -4163,7 +4245,6 @@
                     return;
                 }
 
-                // Proceed with PDF
                 const { data: attempts } = await _supabase
                     .from('Attempt')
                     .select('*, Student(name)')
@@ -4200,44 +4281,16 @@
                     return a.avgTime - b.avgTime;
                 });
 
-                const doc = new window.jspdf.jsPDF('l', 'mm', 'a4');
-                const pageWidth = doc.internal.pageSize.getWidth();
-
-                doc.setFontSize(18);
-                doc.setTextColor(251, 191, 36);
-                doc.text('NOORUSSALAM MADRASA – Overall Rankings', pageWidth / 2, 20, { align: 'center' });
-                doc.setFontSize(12);
-                doc.setTextColor(255, 255, 255);
-                doc.text(`All Days Combined – ${new Date().toLocaleDateString()}`, pageWidth / 2, 30, { align: 'center' });
-
                 const tableData = ranked.map((r, idx) => {
                     const rank = idx + 1;
                     return [rank, r.name, r.totalScore, r.avgTime, r.count];
                 });
 
-                doc.autoTable({
-                    head: [
-                        ['Rank', 'Parent', 'Total Score', 'Avg Time (sec)', 'Attempts']
-                    ],
-                    body: tableData,
-                    startY: 40,
-                    theme: 'dark',
-                    headStyles: {
-                        fillColor: [59, 130, 246],
-                        textColor: [255, 255, 255],
-                        fontStyle: 'bold'
-                    },
-                    bodyStyles: {
-                        textColor: [200, 200, 200]
-                    },
-                    alternateRowStyles: {
-                        fillColor: [30, 30, 30]
-                    },
-                    margin: { left: 10, right: 10 }
-                });
+                const doc = generateStyledPDF(tableData, 'Overall Rankings (All Days)', `Generated on ${new Date().toLocaleDateString('ml-IN', { timeZone: 'Asia/Kolkata' })}`);
 
-                doc.save('Overall_Rankings.pdf');
-                showToast('✅ Overall PDF downloaded', 'success');
+                const blob = doc.output('blob');
+                showPdfPreview(blob);
+                showToast('📄 Overall PDF ready for preview', 'success');
             } catch (err) {
                 showToast('Error generating PDF: ' + err.message, 'error');
                 console.error(err);
@@ -4363,7 +4416,7 @@
             });
         });
 
-        console.log('🚀 NOORUSSALAM MADRASA — PDF download with multi-CDN fallback and CSV fallback.');
+        console.log('🚀 NOORUSSALAM MADRASA — PDF with enhanced layout and preview modal (using browser viewer).');
     </script>
 </body>
 </html>
