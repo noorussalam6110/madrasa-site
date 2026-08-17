@@ -7,7 +7,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Anek+Malayalam:wght@300;400;500;600;700;800&family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js">
     </script>
-    <!-- jsPDF + autoTable – will be loaded dynamically if needed -->
+    <!-- We'll load jsPDF and autoTable dynamically for reliability -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <style>
         /* ===== GLOBAL RESET ===== */
@@ -3864,7 +3864,7 @@
         }
 
         // ================================================================
-        // ADMIN RANKINGS with PDF PREVIEW & ENHANCED LAYOUT
+        // ADMIN RANKINGS with ULTRA-RELIABLE PDF LOADER
         // ================================================================
         let currentRankingDay = 1;
         let pdfBlobForPreview = null;
@@ -3920,10 +3920,10 @@
         }
 
         // ================================================================
-        // ROBUST PDF LOADER – tries multiple CDNs
+        // ULTRA-RELIABLE PDF LOADER – preloads on page load and retries
         // ================================================================
-        let pdfLoadAttempted = false;
-        let pdfLoaded = false;
+        let pdfReady = false;
+        let pdfLoadingPromise = null;
 
         function loadScript(src) {
             return new Promise((resolve, reject) => {
@@ -3936,20 +3936,17 @@
             });
         }
 
-        async function ensurePDFLibraries() {
-            if (pdfLoaded) return true;
-            if (pdfLoadAttempted) return false;
-
-            pdfLoadAttempted = true;
+        async function loadPDFLibraries() {
+            if (pdfReady) return true;
 
             // Check if already loaded
             if (typeof window.jspdf !== 'undefined' && window.jspdf.jsPDF &&
                 typeof window.jspdf.jsPDF.prototype.autoTable === 'function') {
-                pdfLoaded = true;
+                pdfReady = true;
                 return true;
             }
 
-            const cdnSources = [
+            const cdnList = [
                 { jsPDF: 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',
                     autoTable: 'https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js' },
                 { jsPDF: 'https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js',
@@ -3958,32 +3955,56 @@
                     autoTable: 'https://unpkg.com/jspdf-autotable@3.5.31/dist/jspdf.plugin.autotable.js' }
             ];
 
-            for (const src of cdnSources) {
+            for (const src of cdnList) {
                 try {
                     await loadScript(src.jsPDF);
-                    await new Promise(r => setTimeout(r, 100));
+                    await new Promise(r => setTimeout(r, 150));
                     await loadScript(src.autoTable);
-                    await new Promise(r => setTimeout(r, 200));
+                    await new Promise(r => setTimeout(r, 300));
 
+                    // Check if autoTable is available
                     if (typeof window.jspdf !== 'undefined' && window.jspdf.jsPDF &&
                         typeof window.jspdf.jsPDF.prototype.autoTable === 'function') {
-                        pdfLoaded = true;
+                        pdfReady = true;
                         return true;
                     }
 
+                    // Try manual attach
                     if (typeof window.jspdf !== 'undefined' && window.jspdf.plugin &&
                         typeof window.jspdf.plugin.autotable === 'function') {
                         try {
                             window.jspdf.plugin.autotable(window.jspdf.jsPDF);
-                            pdfLoaded = true;
+                            pdfReady = true;
                             return true;
                         } catch (e) { /* ignore */ }
                     }
                 } catch (e) {
-                    console.warn('PDF load failed:', e);
+                    console.warn('PDF load attempt failed:', e);
                 }
             }
             return false;
+        }
+
+        // ---- Preload PDF libraries on page load ----
+        (async function preloadPDF() {
+            const loaded = await loadPDFLibraries();
+            if (loaded) {
+                console.log('✅ PDF libraries loaded successfully.');
+            } else {
+                console.warn('⚠️ PDF libraries could not be loaded. Will fallback to CSV.');
+            }
+        })();
+
+        // ---- Ensure PDF libraries are ready (with retry) ----
+        async function ensurePDFLibraries() {
+            if (pdfReady) return true;
+            // If not ready, try loading again (in case preload failed)
+            const loaded = await loadPDFLibraries();
+            if (loaded) return true;
+
+            // One final retry after a short delay
+            await new Promise(r => setTimeout(r, 500));
+            return await loadPDFLibraries();
         }
 
         // ---- CSV fallback ----
@@ -4012,18 +4033,14 @@
 
         document.getElementById('closePdfPreviewBtn').addEventListener('click', function() {
             document.getElementById('pdfPreviewModal').classList.add('hidden');
-            // Revoke the blob URL to free memory
             const iframe = document.getElementById('pdfPreviewFrame');
             if (iframe.src) {
                 URL.revokeObjectURL(iframe.src);
                 iframe.src = '';
             }
         });
-        // Also close on overlay click
         document.getElementById('pdfPreviewModal').addEventListener('click', function(e) {
-            if (e.target === this) {
-                document.getElementById('closePdfPreviewBtn').click();
-            }
+            if (e.target === this) document.getElementById('closePdfPreviewBtn').click();
         });
 
         document.getElementById('pdfDownloadBtn').addEventListener('click', function() {
@@ -4040,18 +4057,16 @@
             }
         });
 
-        // ---- Generate PDF with enhanced layout ----
+        // ---- Generate Styled PDF ----
         function generateStyledPDF(tableData, title, subtitle) {
             const doc = new window.jspdf.jsPDF('l', 'mm', 'a4');
             const pageWidth = doc.internal.pageSize.getWidth();
             const pageHeight = doc.internal.pageSize.getHeight();
 
-            // Header
             doc.setFontSize(20);
             doc.setTextColor(251, 191, 36);
             doc.text('SKSBV NOORUSSALAM MADRASA', pageWidth / 2, 25, { align: 'center' });
 
-            // Gold decorative line
             doc.setDrawColor(251, 191, 36);
             doc.setLineWidth(0.5);
             doc.line(30, 32, pageWidth - 30, 32);
@@ -4064,7 +4079,6 @@
             doc.setTextColor(200, 200, 200);
             doc.text(subtitle, pageWidth / 2, 50, { align: 'center' });
 
-            // Table
             doc.autoTable({
                 head: [['Rank', 'Parent', 'Score', 'Time (sec)', 'Submitted']],
                 body: tableData,
@@ -4085,7 +4099,6 @@
                 },
                 margin: { left: 10, right: 10 },
                 didDrawPage: function(data) {
-                    // Footer with page number
                     const pageNumber = doc.internal.getCurrentPageInfo().pageNumber;
                     const totalPages = doc.internal.getNumberOfPages();
                     doc.setFontSize(8);
@@ -4097,7 +4110,7 @@
             return doc;
         }
 
-        // ---- Download Day PDF with Preview ----
+        // ---- Download Day PDF ----
         document.getElementById('downloadDayRankBtn').addEventListener('click', function() {
             downloadDayRanking(currentRankingDay);
         });
@@ -4143,7 +4156,7 @@
                     return;
                 }
 
-                // Fetch data
+                // Fetch and generate PDF
                 const { data: attempts } = await _supabase
                     .from('Attempt')
                     .select('*, Student(name)')
@@ -4163,14 +4176,11 @@
                     if (a.score !== b.score) return (b.score || 0) - (a.score || 0);
                     return (a.timeTaken || 9999) - (b.timeTaken || 9999);
                 });
-
                 const tableData = ranked.map((r, idx) => {
                     const rank = idx + 1;
                     return [rank, r.Student?.name || 'Unknown', r.score || 0, r.timeTaken || 0, formatDate(r.endTime)];
                 });
-
                 const doc = generateStyledPDF(tableData, `Day ${day} Rankings`, `Generated on ${new Date().toLocaleDateString('ml-IN', { timeZone: 'Asia/Kolkata' })}`);
-
                 const blob = doc.output('blob');
                 showPdfPreview(blob);
                 showToast('📄 PDF ready for preview', 'success');
@@ -4183,7 +4193,7 @@
             }
         }
 
-        // ---- Download Overall PDF with Preview ----
+        // ---- Download Overall PDF ----
         document.getElementById('downloadOverallRankBtn').addEventListener('click', function() {
             downloadOverallRanking();
         });
@@ -4280,14 +4290,11 @@
                     if (a.totalScore !== b.totalScore) return b.totalScore - a.totalScore;
                     return a.avgTime - b.avgTime;
                 });
-
                 const tableData = ranked.map((r, idx) => {
                     const rank = idx + 1;
                     return [rank, r.name, r.totalScore, r.avgTime, r.count];
                 });
-
                 const doc = generateStyledPDF(tableData, 'Overall Rankings (All Days)', `Generated on ${new Date().toLocaleDateString('ml-IN', { timeZone: 'Asia/Kolkata' })}`);
-
                 const blob = doc.output('blob');
                 showPdfPreview(blob);
                 showToast('📄 Overall PDF ready for preview', 'success');
@@ -4416,7 +4423,7 @@
             });
         });
 
-        console.log('🚀 NOORUSSALAM MADRASA — PDF with enhanced layout and preview modal (using browser viewer).');
+        console.log('🚀 NOORUSSALAM MADRASA — PDF with ultra‑reliable loader and preview modal.');
     </script>
 </body>
 </html>
