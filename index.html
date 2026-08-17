@@ -1539,43 +1539,63 @@
             margin: 0 4px;
         }
 
-        /* Answer detail modal */
-        .answer-item {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 10px 0;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-        }
-        .answer-item .qnum {
-            font-weight: 600;
-            color: var(--text-muted);
-            min-width: 40px;
-        }
-        .answer-item .qtext {
-            flex: 1;
-            color: #e2e8f0;
-        }
-        .answer-item .result {
-            font-weight: 700;
-            padding: 2px 12px;
-            border-radius: 30px;
+        /* ===== ANSWER DETAIL MODAL — SMALL FONT ===== */
+        #answerDetailsContainer {
             font-size: 0.75rem;
         }
-        .answer-item .result.correct {
+        #answerDetailsContainer .answer-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+            flex-wrap: wrap;
+        }
+        #answerDetailsContainer .answer-item .qnum {
+            font-weight: 600;
+            color: var(--text-muted);
+            min-width: 26px;
+            font-size: 0.65rem;
+        }
+        #answerDetailsContainer .answer-item .qtext {
+            flex: 1;
+            color: #e2e8f0;
+            font-size: 0.75rem;
+            min-width: 100px;
+        }
+        #answerDetailsContainer .answer-item .selected-opt {
+            color: #cbd5e1;
+            font-size: 0.7rem;
+        }
+        #answerDetailsContainer .answer-item .result {
+            font-weight: 700;
+            padding: 0px 10px;
+            border-radius: 30px;
+            font-size: 0.6rem;
+            white-space: nowrap;
+        }
+        #answerDetailsContainer .answer-item .result.correct {
             background: rgba(16, 185, 129, 0.2);
             color: #34d399;
         }
-        .answer-item .result.wrong {
+        #answerDetailsContainer .answer-item .result.wrong {
             background: rgba(239, 68, 68, 0.2);
             color: #f87171;
         }
-        .answer-item .selected-opt {
-            color: #cbd5e1;
-        }
-        .answer-item .correct-opt {
+        #answerDetailsContainer .correct-opt {
             color: #34d399;
             font-weight: 600;
+            font-size: 0.7rem;
+        }
+        #answerDetailsContainer .summary-text {
+            font-size: 0.8rem;
+            color: var(--gold);
+            font-weight: 600;
+            text-align: center;
+            margin-bottom: 8px;
+        }
+        .answer-detail-sub {
+            font-size: 0.7rem !important;
         }
 
         /* ================================================================
@@ -1706,13 +1726,13 @@
                 padding: 16px;
                 max-width: 100%;
             }
-            .answer-item {
-                flex-wrap: wrap;
-                gap: 6px;
+            #answerDetailsContainer .answer-item {
+                gap: 4px;
             }
-            .answer-item .qtext {
+            #answerDetailsContainer .answer-item .qtext {
                 flex-basis: 100%;
-                margin-left: 40px;
+                margin-left: 30px;
+                font-size: 0.7rem;
             }
         }
 
@@ -2256,8 +2276,8 @@
                     <h3><i class="fas fa-list-check" style="color:var(--gold);"></i> ഉത്തരങ്ങളുടെ വിശദാംശങ്ങൾ</h3>
                     <button class="btn btn-outline btn-sm" id="closeAnswerDetailsBtn"><i class="fas fa-times"></i></button>
                 </div>
-                <p class="text-muted" id="answerDetailsSub">ഓരോ ചോദ്യത്തിനും നിങ്ങൾ നൽകിയ ഉത്തരവും ശരിയായ ഉത്തരവും</p>
-                <div id="answerDetailsContainer" style="margin-top:12px; max-height:400px; overflow-y:auto;">
+                <p class="text-muted answer-detail-sub" id="answerDetailsSub">ഓരോ ചോദ്യത്തിനും നിങ്ങൾ നൽകിയ ഉത്തരവും ശരിയായ ഉത്തരവും</p>
+                <div id="answerDetailsContainer" style="margin-top:8px; max-height:400px; overflow-y:auto;">
                     <div class="text-center text-muted">ലോഡ് ചെയ്യുന്നു...</div>
                 </div>
             </div>
@@ -3046,7 +3066,7 @@
         }
 
         // ================================================================
-        // ANSWER DETAILS — Show correct/incorrect for each question
+        // ANSWER DETAILS — Show correct/incorrect for each question (Small Font)
         // ================================================================
         async function showAnswerDetails(attemptId) {
             const modal = document.getElementById('answerDetailsModal');
@@ -3058,7 +3078,6 @@
             sub.textContent = 'ഓരോ ചോദ്യത്തിനും നിങ്ങൾ നൽകിയ ഉത്തരവും ശരിയായ ഉത്തരവും';
 
             try {
-                // Fetch answers for this attempt
                 const { data: answers, error: aErr } = await _supabase
                     .from('Answer')
                     .select('*')
@@ -3070,7 +3089,6 @@
                     return;
                 }
 
-                // Fetch questions for these answers
                 const questionIds = answers.map(a => a.questionId);
                 const { data: questions, error: qErr } = await _supabase
                     .from('Question')
@@ -3080,7 +3098,6 @@
 
                 if (qErr) throw qErr;
 
-                // Map questionId to question data
                 const qMap = {};
                 questions.forEach(q => qMap[q.id] = q);
 
@@ -3102,19 +3119,16 @@
                         <div class="answer-item">
                             <span class="qnum">#${idx+1}</span>
                             <span class="qtext">${q.questionText}</span>
-                            <span class="selected-opt">നിങ്ങൾ: ${selectedText}</span>
+                            <span class="selected-opt">തിരഞ്ഞെടുത്തത്: ${selectedText}</span>
                             <span class="result ${isCorrect ? 'correct' : 'wrong'}">${isCorrect ? '✅ ശരി' : '❌ തെറ്റ്'}</span>
                         </div>
-                        <div style="font-size:0.75rem; color:var(--text-muted); margin-left:52px; margin-bottom:8px;">
-                            ശരിയുത്തരം: <span class="correct-opt">${correctText}</span>
+                        <div style="font-size:0.65rem; color:var(--text-muted); margin-left:32px; margin-bottom:6px; padding-left:4px;">
+                            ✅ ശരിയുത്തരം: <span class="correct-opt">${correctText}</span>
                         </div>
                     `;
                 });
 
-                // Show summary
-                const summary = `<div style="text-align:center; margin-bottom:12px; color:var(--gold); font-weight:600;">
-                    ${correctCount} / ${total} ശരി (${Math.round((correctCount/total)*100)}%)
-                </div>`;
+                const summary = `<div class="summary-text">${correctCount} / ${total} ശരി (${Math.round((correctCount/total)*100)}%)</div>`;
                 container.innerHTML = summary + html;
 
             } catch (err) {
@@ -3966,8 +3980,8 @@
             });
         });
 
-        console.log('🚀 NOORUSSALAM MADRASA — Answer details added: correct/incorrect per question.');
-        console.log('✅ Click "📋 ഉത്തരങ്ങൾ കാണുക" to see each question with your answer and correct answer.');
+        console.log('🚀 NOORUSSALAM MADRASA — Answer details with smaller font.');
+        console.log('✅ Font sizes reduced for compact view in answer details modal.');
     </script>
 </body>
 </html>
