@@ -2275,7 +2275,7 @@
             <!-- HISTORY BUTTON -->
             <div class="history-btn-wrap" id="historyBtnWrap">
                 <button class="btn btn-outline" id="showHistoryBtn" style="border-color:rgba(251,191,36,0.2); color:var(--gold);">
-                    <i class="fas fa-clock-rotate-left"></i> Results
+                    <i class="fas fa-clock-rotate-left"></i> ഇതുവരെയുള്ള  Results
                 </button>
             </div>
         </div>
@@ -2284,7 +2284,7 @@
         <div id="historyModal" class="modal-overlay hidden">
             <div class="modal-glass" style="max-width:640px;">
                 <div class="flex-between" style="margin-bottom:16px;">
-                    <h3><i class="fas fa-clock-rotate-left" style="color:var(--gold);"></i>ഇതുവരെയുള്ള Results</h3>
+                    <h3><i class="fas fa-clock-rotate-left" style="color:var(--gold);"></i> Results</h3>
                     <button class="btn btn-outline btn-sm" id="closeHistoryBtn"><i class="fas fa-times"></i></button>
                 </div>
                 <p class="text-muted">ഓരോ ദിവസത്തിലെയും നിങ്ങളുടെ പോയിന്റ്, റാങ്ക്, സമയം എന്നിവ.</p>
@@ -3165,7 +3165,7 @@
                         <div class="answer-item">
                             <span class="qnum">#${idx+1}</span>
                             <span class="qtext">${q.questionText}</span>
-                            <span class="selected-opt">തിരഞ്ഞെടുത്തത്: ${selectedText}</span>
+                            <span class="selected-opt">YOUR ANSWER: ${selectedText}</span>
                             <span class="result ${isCorrect ? 'correct' : 'wrong'}">${isCorrect ? '✅ ശരി' : '❌ തെറ്റ്'}</span>
                         </div>
                         <div style="font-size:0.65rem; color:var(--text-muted); margin-left:32px; margin-bottom:6px; padding-left:4px;">
@@ -3458,7 +3458,7 @@
                     }
                 }, 1000);
 
-                showToast('✅ ക്വിസ് ആരംഭിച്ചു. ഭാഗ്യം!', 'success');
+                showToast('✅ ക്വിസ് ആരംഭിച്ചു.!', 'success');
             } catch (err) {
                 showToast(err.message, 'error');
             }
